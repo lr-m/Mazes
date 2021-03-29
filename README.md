@@ -3,7 +3,7 @@ Visualisation of various maze generation algorithms, as well as solvers. Plus a 
 
 TODO:
 - Add makefile for the Maze_Tester program
-- Add READMEs
+- Add READMEs and usage
 - Convert maze generator to command line
 - General visual improvements with analysis and visualisation
 
