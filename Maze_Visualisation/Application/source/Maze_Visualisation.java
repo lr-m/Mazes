@@ -31,7 +31,7 @@ ArrayList < Square > solutionList = new ArrayList();
 
 Square_HashMap solution;
 
-PImage play, pause, skipToEnd, next, resetButImage;
+PImage play, pause, skipToEnd, resetButImage;
 
 Maze maze;
 Square currentSquare;
@@ -55,7 +55,7 @@ DropList generationSelector, solveSelector, saveSelector;
 Square startingPoint, endingPoint;
 
 Boolean reset = false, paused = false;
-Button resetBut, pauseBut, save, skipToEndBut, nextBut;
+Button resetBut, pauseBut, save, skipToEndBut;
 
 Slider sizeSlider, speedSlider;
 
@@ -94,17 +94,15 @@ public void setup() {
     startingPointSelected = false;
     endingPointSelected = false;
 
-    pauseBut = new Button("", 10, height - 50, 35, 35);
-    resetBut = new Button("", 145, height - 50, 35, 35);
-    skipToEndBut = new Button("", 100, height - 50, 35, 35);
-    nextBut = new Button("", 55, height - 50, 35, 35);
+    pauseBut = new Button("", 25, height - 50, 35, 35);
+    resetBut = new Button("", 130, height - 50, 35, 35);
+    skipToEndBut = new Button("", 80, height - 50, 35, 35);
     save = new Button("Save", 100, 430, 75, 30);
 
     play = loadImage("play.png");
     pause = loadImage("pause.png");
     resetButImage = loadImage("reset.png");
     skipToEnd = loadImage("skipToEnd.png");
-    next = loadImage("next.png");
     
     strokeCap(PROJECT);
 
@@ -249,16 +247,6 @@ public void mousePressed() {
     if (!solved & solvePressed & skipToEndBut.MouseIsOver()){
       skipToEndSolve();
     }
-    
-    // If next button pressed, perform an iteration of the generation 
-    if (!generated & generatePressed & nextBut.MouseIsOver()){
-      generators[selectedGeneration-1].generate();
-    }
-    
-    // If next button pressed, perform an iteration of the solve
-    if (!solved & solvePressed & nextBut.MouseIsOver()){
-      solvers[selectedSolver-1].solve();
-    }
 
     // Check if the generation/solve button is pressed
     if (!generatePressed && !generationSelector.dropped && !generated && generateMaze.MouseIsOver() && selectedGeneration != 0) {
@@ -382,7 +370,6 @@ public void drawButtons() {
     resetBut.Draw(resetButImage);
     save.Draw();
     skipToEndBut.Draw(skipToEnd);
-    nextBut.Draw(next);
 
     sizeSlider.display();
     speedSlider.display();
