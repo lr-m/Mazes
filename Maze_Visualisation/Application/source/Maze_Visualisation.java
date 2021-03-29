@@ -72,17 +72,17 @@ public void setup() {
     
     tree = new Maze_Tree();
 
-    generateMaze = new Button("Generate", 15, 210, 160, 20);
-    solveMaze = new Button("Solve", 15, 350, 160, 20);
-    clearSolution = new Button("Clear Solution", 15, 380, 160, 20);
-    resetPoints = new Button("Reset Points", 15, 410, 160, 20);
+    generateMaze = new Button("Generate", 15, 330, 160, 30);
+    solveMaze = new Button("Solve", 15, 570, 160, 30);
+    clearSolution = new Button("Clear Solution", 15, 610, 160, 30);
+    resetPoints = new Button("Reset Points", 15, 650, 160, 30);
 
-    sizeSlider = new Slider(20, 70, 150, 16, 8, 64);
-    speedSlider = new Slider(20, 125, 150, 16, 1, 500);
+    sizeSlider = new Slider(20, 130, 150, 20, 8, 64);
+    speedSlider = new Slider(20, 190, 150, 20, 1, 500);
 
-    generationSelector = new DropList(15, 180, 160, 20, "Generation Method", new ArrayList(Arrays.asList("Aldous-Broder", "BackTrack", "Binary Tree", "Blobby Recursive", "Eller's", "Houston", "Hunt & Kill", "Kruskal's", "Prim's", "Recursive Division", "Sidewinder", "Wilson's")));
-    solveSelector = new DropList(15, 320, 160, 20, "Solver Method", new ArrayList(Arrays.asList("A* (Manhattan)", "Breadth-First", "Depth-First", "Left-Wall", "Right-Wall")));
-    saveSelector = new DropList(15, 270, 75, 20, "Save as", new ArrayList(Arrays.asList("Text", "Image")));
+    generationSelector = new DropList(15, 290, 160, 30, "Generation Method", new ArrayList(Arrays.asList("Aldous-Broder", "BackTrack", "Binary Tree", "Blobby Recursive", "Eller's", "Houston", "Hunt & Kill", "Kruskal's", "Prim's", "Recursive Division", "Sidewinder", "Wilson's")));
+    solveSelector = new DropList(15, 530, 160, 30, "Solver Method", new ArrayList(Arrays.asList("A* (Manhattan)", "Breadth-First", "Depth-First", "Left-Wall", "Right-Wall")));
+    saveSelector = new DropList(15, 430, 75, 30, "Save as", new ArrayList(Arrays.asList("Text", "Image")));
 
     maze = new Maze(200, 75, width - 225, height - 100);
     maze.create();
@@ -98,7 +98,7 @@ public void setup() {
     resetBut = new Button("", 145, height - 50, 35, 35);
     skipToEndBut = new Button("", 100, height - 50, 35, 35);
     nextBut = new Button("", 55, height - 50, 35, 35);
-    save = new Button("Save", 100, 270, 75, 20);
+    save = new Button("Save", 100, 430, 75, 30);
 
     play = loadImage("play.png");
     pause = loadImage("pause.png");
@@ -394,17 +394,17 @@ public void drawButtons() {
     }
     
     fill(0);
-    textSize(15);
-    text("Configure", 95, 20);
-    text("Generate", 95, 160);
-    text("Save", 95, 250);
-    text("Solve", 95, 305);
+    textSize(18);
+    text("Configure", 95, 80);
+    text("Generate", 95, 270);
+    text("Save", 95, 410);
+    text("Solve", 95, 510);
     text("Controls", 95, height - 65);
 
-    textSize(12);
+    textSize(13);
     fill(100);
-    text("Square Size: " + (int)(sizeSlider.getValue()), 95, 50);
-    text("Iterations per Frame: " + speed, 95, 105);
+    text("Square Size: " + (int)(sizeSlider.getValue()), 95, 110);
+    text("Iterations per Frame: " + speed, 95, 170);
 
     solveSelector.Draw();
     saveSelector.Draw();
