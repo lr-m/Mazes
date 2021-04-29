@@ -28,6 +28,9 @@ int main(int argc, char *argv[])
     int leftSolveIterations = 0;
     int rightSolveIterations = 0;
 
+    // Copy maze into file
+    strcpy(filename, argv[1]);
+
     // Check verbose
     if (argc == 9){
         char *verboseFlag = argv[8];
@@ -45,9 +48,6 @@ int main(int argc, char *argv[])
     }
     
     file = fopen(filename, "r");
-    
-    // Copy maze into file
-    strcpy(filename, argv[1]);
 
     for(int i=0;i<rows;i++){
         fscanf(file, "%s", (char*) &maze[i]);

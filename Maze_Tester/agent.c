@@ -316,7 +316,7 @@ void getAheadOfAgentCoordinates(struct solver_agent *agent, int *x, int *y){
 
 /**
  * Gets the coordinates to the right of the agent.
- *//
+ */
 void getRightOfAgentCoordinates(struct solver_agent *agent, int *x, int *y){
     if (agent -> direction == 0){
         *x = (agent -> xCo) + 1;
