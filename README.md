@@ -17,7 +17,7 @@ TODO:
 
 ### Maze_Tester
 - C program that solves a passed maze, mazes are passed as text files in the form:
-
+```
   #########
   #-----#-#
   ###-#-#-#
@@ -27,13 +27,13 @@ TODO:
   #-#-#-###
   #---#---#
   #########
-  
+  ```
 - Where '#' represents a wall and '-' represents an empty square.
 - The example maze is a 9x9 maze, example of program call:
-- 
-- ```gcc main.c agent.c hash.c stack.c -o solve```
-- ```./solve "maze.txt" 9 9 1 1 7 7 v```
-- 
+
+```gcc main.c agent.c hash.c stack.c -o solve```
+```./solve "maze.txt" 9 9 1 1 7 7 v```
+
 - This use case would provide the following output:
 
 ```
