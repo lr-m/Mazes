@@ -11,6 +11,26 @@ TODO:
 - Contains the  application, download and run the .exe to see the Maze Visualisation application.
 - Contains the source code for the application, written in Java/Processing.
 
+- Generators:
+  - Aldous-Broder
+  - Backtracker
+  - Binary Tree
+  - Blobby Recursive
+  - Ellers
+  - Houston
+  - Hunt & Kill
+  - Kruskals
+  - Prims
+  - Recursive Division
+  - Sidewinder
+  - Wilson's
+- Solvers:
+  - A* (Manhattan heuristic)
+  - Breadth-First Search
+  - Depth-First Search (Random)
+  - Left-First Depth-First Search
+  - Right-First Depth-First Search
+
 ### Maze_Generator
 - Generates mazes that are exported to folders within the data folder to be analysed by the Script and Maze_Tester program.
 - May change to a command line variant rather than using the GUI.
