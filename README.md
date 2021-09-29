@@ -31,6 +31,8 @@ TODO:
   - Left-First Depth-First Search
   - Right-First Depth-First Search
 
+![Image](https://user-images.githubusercontent.com/47477832/135288514-e66c9b87-a9d8-4da6-a583-f1745b2d185c.png)
+
 ### Maze_Generator
 - Generates mazes that are exported to folders within the data folder to be analysed by the Script and Maze_Tester program.
 - May change to a command line variant rather than using the GUI.
@@ -100,3 +102,5 @@ Solution Length: 21
 
 ### Maze_Analysis
 - Using the data from the previously described components, a visualisation is created to compare the mazes output by the various algorithms.
+
+![Picture2](https://user-images.githubusercontent.com/47477832/135289449-e0a1beea-8756-4e0b-b1c5-a6c89a09505b.png)
