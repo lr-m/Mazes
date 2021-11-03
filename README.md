@@ -1,12 +1,6 @@
 # Maze_Generation
 Visualisation of various maze generation algorithms, as well as solvers. Plus a maze benchmarker.
 
-TODO:
-- Add makefile for the Maze_Tester program
-- Add READMEs and usage
-- Convert maze generator to command line
-- General visual improvements with analysis and visualisation
-
 ### Maze_Visualisation:
 - Contains the  application, download and run the .exe to see the Maze Visualisation application.
 - Contains the source code for the application, written in Java/Processing.
