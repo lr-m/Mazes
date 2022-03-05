@@ -27,7 +27,7 @@ class DropList {
     // Draws the droplist on the sketch
     void Draw() {
         noStroke();
-        fill(255);
+        fill(200);
         rect(x, y, w, h, h);
         fill(0);
         text(title, x + ((w - 20) / 2), y + ((h) / 2));
@@ -37,14 +37,15 @@ class DropList {
         } else {
             dropList.Draw();
         }
+        
+        int currY = y + h;
+        int col = 200;
 
         if (dropped) {
             if (animateI < labels.size()-1){
               animateI++;
             }
           
-            int currY = y + h;
-            int col = 250;
             for (int i = 0; i <= animateI; i++) {
                 fill(col);
                 rect(x, currY, w - 20, h, h);
@@ -58,8 +59,6 @@ class DropList {
               animateI--;
             }
           
-            int currY = y + h;
-            int col = 250;
             for (int i = 0; i <= animateI; i++) {
                 fill(col);
                 rect(x, currY, w - 20, h, h);
@@ -120,41 +119,41 @@ class Button {
         }
 
         if (animationI > 0) {
-            fill(lerpColor(color(200), color(255), (25 - animationI) / 25));
+            fill(lerpColor(color(100), color(200), (8 - animationI) / 8));
             animationI--;
         } else {
-            fill(255);
+            fill(200);
         }
 
         textSize(12);
         rect(x, y, w, h, h);
-        fill(0);
+        fill(lerpColor(color(0), color(255), animationI / 8));
         text(label, x + (w / 2), y + (h / 2));
     }
 
     // Draw the button with the passed PImage
     void Draw(PImage image) {
         noStroke();
-        fill(225);
+        fill(25);
         rect(x, y, w, h, h);
         image(image, x, y, w, h);
-        fill(0);
+        fill(25);
     }
 
     // Draws the button with a darker fill to signify that it has been selected.
     void drawSelected() {
         if (pressed == true) {
             if (animationI < 8) {
-                fill(lerpColor(color(255), color(200), animationI / 8));
+                fill(lerpColor(color(200), color(100), animationI / 8));
                 animationI++;
             } else {
-                fill(200);
+                fill(100);
             }
         }
 
         textSize(12);
         rect(x, y, w, h, h);
-        fill(0);
+        fill(lerpColor(color(0), color(255), animationI / 8));
         text(label, x + (w / 2), y + (h / 2));
     }
 
@@ -207,7 +206,7 @@ class Slider {
             press();
         }
 
-        fill(255);
+        fill(200);
         rect(startX - sliderHeight / 2, startY, sliderWidth + sliderHeight, sliderHeight, sliderHeight);
 
         fill(100);

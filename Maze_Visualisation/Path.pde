@@ -75,8 +75,8 @@ class Path {
         squaresToUpdate.add(endSquare);
       
         if (refill) {
-            stroke(255);
-            fill(255);
+            stroke(25);
+            fill(25);
             buffer = 0;
         }
 

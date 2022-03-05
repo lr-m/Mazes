@@ -232,7 +232,7 @@ class Maze {
 
     // Overwrite the maze with a white background
     void overwrite() {
-        fill(255);
+        fill(25);
         noStroke();
         rect(x + (w/2), y + (h/2), w, h);
     }
@@ -339,13 +339,21 @@ class Maze {
             square.setSet(-1);
         }
     }
+    
+    void redrawEdge(){
+        fill(256);
+        stroke(255);
+        strokeWeight(5);
+        rect(x + (w/2), y + (h/2), w + 5, h + 5);
+        strokeWeight(1);   
+    }
 
     // Draw the grid
     void display() {
         fill(256);
-        stroke(0);
-        strokeWeight(12);
-        rect(x + (w/2), y + (h/2), w + 12.5, h + 12.5);
+        stroke(255);
+        strokeWeight(5);
+        rect(x + (w/2), y + (h/2), w + 2.5, h + 2.5);
         strokeWeight(1);
 
         if (solved) {

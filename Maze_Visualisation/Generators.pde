@@ -346,13 +346,13 @@ class Blobby_Recursive implements IGenerator {
             return;
         }
 
-        if (setNumbersToDivide.size() > 0 || !nextSet) {
+        while (setNumbersToDivide.size() > 0 || !nextSet) {
             if (nextSet) {
                 nextSet();
                 nextSet = false;
             }
 
-            if (frontier0.size() > 0 || frontier1.size() > 0) {
+            while (frontier0.size() > 0 || frontier1.size() > 0) {
                 ArrayList < Square > newFrontier = new ArrayList(frontier0);
 
                 for (Square frontierSquare: frontier0) {

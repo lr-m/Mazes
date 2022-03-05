@@ -169,7 +169,7 @@ class Square {
                     }
     
                     if (aStar.possibleSquares.contains(this)) {
-                        fill(0);
+                        fill(25);
                         rect(x + maze.squareSize/2, y + maze.squareSize/2, w - (maze.squareSize/4), h - (maze.squareSize/4));
                     }
                     break;
@@ -185,7 +185,7 @@ class Square {
                 case 3:
                     Depth_First depthFirst = (Depth_First) solvers[selectedSolver-1];
                     if (depthFirst.turtle.prevSquares.containsSquare(this)) {
-                        fill(0);
+                        fill(25);
                         rect(x + maze.squareSize/2, y + maze.squareSize/2, w, h);
                     }
     
@@ -200,7 +200,7 @@ class Square {
                     Left_Wall leftWall = (Left_Wall) solvers[selectedSolver-1];
                     if (leftWall.turtle!=null){
                         if (leftWall.turtle.prevSquares.containsSquare(this)) {
-                            fill(0);
+                            fill(25);
                             rect(x + maze.squareSize/2, y + maze.squareSize/2, w, h);
                         }
         
@@ -216,7 +216,7 @@ class Square {
                     Right_Wall rightWall = (Right_Wall) solvers[selectedSolver-1];
                     if (rightWall.turtle!=null){
                         if (rightWall.turtle.prevSquares.containsSquare(this)) {
-                            fill(0);
+                            fill(25);
                             rect(x + maze.squareSize/2, y + maze.squareSize/2, w, h);
                         }
         
@@ -258,8 +258,8 @@ class Square {
                 } 
                 
                 if (this == currentSquare){
-                    fill(0);
-                    rect(x + maze.squareSize/2, y + maze.squareSize/2, w - (maze.squareSize/2), h - (maze.squareSize/2));
+                    fill(0, 255, 0);
+                    rect(x + maze.squareSize/2, y + maze.squareSize/2, w - (1.5 * maze.squareSize/2), h - (1.5 * maze.squareSize/2));
                 }
                 break;
             case(2):
@@ -282,7 +282,7 @@ class Square {
                     rect(x + maze.squareSize/2, y + maze.squareSize/2, w - (maze.squareSize/2), h - (maze.squareSize/2));
                 } else {
                     noStroke();
-                    fill(255);
+                    fill(25);
                     rect(x + maze.squareSize/2, y + maze.squareSize/2, w - (maze.squareSize/4), h - (maze.squareSize/4));
                 }
                 break;
@@ -290,18 +290,26 @@ class Square {
                 // Blobby
                 if (set != -1 && set != 0){
                   colorMode(HSB);
+                  
+                  fill(25);
+                  rect(x + maze.squareSize/2, y + maze.squareSize/2, w - 0.75 * (maze.squareSize/2), h - 0.75 * (maze.squareSize/2));
+                  
                   fill(map(getSet()%17, 0, 17, 0, 255), 255, 225);
                   rect(x + maze.squareSize/2, y + maze.squareSize/2, w - (maze.squareSize/2), h - (maze.squareSize/2));
                   colorMode(RGB);
                 } else {
                   noStroke();
-                    fill(255);
-                    rect(x + maze.squareSize/2, y + maze.squareSize/2, w - (maze.squareSize/4), h - (maze.squareSize/4));
+                  fill(25);
+                  rect(x + maze.squareSize/2, y + maze.squareSize/2, w - (maze.squareSize/4), h - (maze.squareSize/4));
                 }
                 break;
             case(5):
                 // Ellers
                 colorMode(HSB);
+                
+                fill(25);
+                rect(x + maze.squareSize/2, y + maze.squareSize/2, w - 0.75 * (maze.squareSize/2), h - 0.75 * (maze.squareSize/2));
+                
                 fill(map(getSet()%maze.getNumberOfRows(), 0, maze.getNumberOfRows(), 0, 255), 255, 225);
                 rect(x + maze.squareSize/2, y + maze.squareSize/2, w - (maze.squareSize/2), h - (maze.squareSize/2));
                 colorMode(RGB);
@@ -312,14 +320,18 @@ class Square {
                 Houston houston = (Houston) generators[selectedGeneration-1];
                 if (houston.wilsonsSolver.currentWalk!=null && houston.wilsonsSolver.currentWalk.containsSquare(this)){
                     noStroke();
-                    fill(0);
-                    rect(x + maze.squareSize/2, y + maze.squareSize/2, w - (maze.squareSize/2), h - (maze.squareSize/2));
+                    
+                    fill(25);
+                    rect(x + maze.squareSize/2, y + maze.squareSize/2, w - 0.75 * (maze.squareSize/2), h - 0.75 * (maze.squareSize/2));
+                    
+                    fill(255);
+                    rect(x + maze.squareSize/2, y + maze.squareSize/2, w - floor(maze.squareSize/1.5), h - floor(maze.squareSize/1.5));
                 } else if ((houston.stage == 2 && houston.wilsonsSolver.visitedSquares.containsSquare(this)) || houston.aldousSolver.visitedSquares.containsSquare(this)){
                     fill(lerpColor(color(255, 0, 0), color(0, 255, 0), x/width ) + lerpColor(color(0, 0, 0), color(0, 0, 255), y/height ));
                     rect(x + maze.squareSize/2, y + maze.squareSize/2, w - (maze.squareSize/2), h - (maze.squareSize/2));
                 } else {
                     noStroke();
-                    fill(255);
+                    fill(25);
                     rect(x + maze.squareSize/2, y + maze.squareSize/2, w - (maze.squareSize/4), h - (maze.squareSize/4));
                 }
                 break;
@@ -335,6 +347,10 @@ class Square {
             case(8):
                 // Kruskal
                 colorMode(HSB);
+                
+                fill(25);
+                rect(x + maze.squareSize/2, y + maze.squareSize/2, w - 0.75 * (maze.squareSize/2), h - 0.75 * (maze.squareSize/2));
+                
                 fill(map(getSet()%maze.getNumberOfRows(), 0, maze.getNumberOfRows(), 0, 255), 255, 225);
                 rect(x + maze.squareSize/2, y + maze.squareSize/2, w - (maze.squareSize/2), h - (maze.squareSize/2));
                 colorMode(RGB);
@@ -359,7 +375,7 @@ class Square {
                     colorMode(RGB);
                 } else {
                     noStroke();
-                    fill(255);
+                    fill(25);
                     rect(x + maze.squareSize/2, y + maze.squareSize/2, w - (maze.squareSize/4), h - (maze.squareSize/4));
                 }
                 break;
@@ -369,15 +385,20 @@ class Square {
                 
                 if (wilsons.currentWalk.containsSquare(this)){
                     noStroke();
-                    fill(0);
+                    
+                    fill(25);
+                    rect(x + maze.squareSize/2, y + maze.squareSize/2, w - 0.75 * (maze.squareSize/2), h - 0.75 * (maze.squareSize/2));
+                    
+                    fill(255);
                     rect(x + maze.squareSize/2, y + maze.squareSize/2, w - floor(maze.squareSize/1.5), h - floor(maze.squareSize/1.5));
                 } else if (wilsons.visitedSquares.containsSquare(this)){
                     fill(lerpColor(color(255, 0, 0), color(0, 255, 0), x/width ) + lerpColor(color(0, 0, 0), color(0, 0, 255), y/height ));
                     rect(x + maze.squareSize/2, y + maze.squareSize/2, w - (maze.squareSize/2), h - (maze.squareSize/2));
                 } else {
                     noStroke();
-                    fill(255);
-                    rect(x + maze.squareSize/2, y + maze.squareSize/2, w - ceil(maze.squareSize/3), h - ceil(maze.squareSize/3));
+                    
+                    fill(25);
+                    rect(x + maze.squareSize/2, y + maze.squareSize/2, w, h);
                 }
                 break;
              default:
@@ -387,10 +408,12 @@ class Square {
 
         // Draws the walls of the edges for specific generations and at the end of the generation
         strokeWeight((int) (max(1, maze.squareSize/10)));
-        stroke(0);
+        stroke(255);
         if (!(selectedGeneration == 12 || selectedGeneration == 6) || 
              (selectedGeneration == 12 && ((Wilsons) generators[selectedGeneration-1]).visitedSquares.containsSquare(this)) || 
-             (selectedGeneration == 6 && ((((Houston) generators[selectedGeneration-1]).stage == 2 && ((Houston) generators[selectedGeneration-1]).wilsonsSolver.visitedSquares.containsSquare(this)) || (((Houston) generators[selectedGeneration-1]).aldousSolver.visitedSquares.containsSquare(this))))){
+             (selectedGeneration == 6 && ((((Houston) generators[selectedGeneration-1]).stage == 2 && 
+             ((Houston) generators[selectedGeneration-1]).wilsonsSolver.visitedSquares.containsSquare(this)) || 
+             (((Houston) generators[selectedGeneration-1]).aldousSolver.visitedSquares.containsSquare(this))))){
           if (upWall) {
               line(x, y, x + w, y);
           }
@@ -480,8 +503,4 @@ class Square {
     void addLeftWall() {
         this.leftWall = true;
     }
-
-    
-
-    
 }
