@@ -5,8 +5,8 @@ import java.lang.*;
 
 PrintWriter output;
 
-ArrayList < Square > squaresToUpdate = new ArrayList();
-ArrayList < Square > solutionList = new ArrayList();
+ArrayList<Square> squaresToUpdate = new ArrayList();
+ArrayList<Square> solutionList = new ArrayList();
 
 Square_HashMap solution;
 
@@ -48,7 +48,7 @@ void setup() {
     frameRate(60);
     background(25);
     rectMode(CENTER);
-    
+
     tree = new Maze_Tree();
 
     generateMaze = new Button("Generate", 15, 210, 160, 20);
@@ -59,9 +59,15 @@ void setup() {
     sizeSlider = new Slider(20, 70, 150, 16, 4, 64);
     speedSlider = new Slider(20, 125, 150, 16, 1, 500);
 
-    generationSelector = new DropList(15, 180, 160, 20, "Generation Method", new ArrayList(Arrays.asList("Aldous-Broder", "BackTrack", "Binary Tree", "Blobby Recursive", "Eller's", "Houston", "Hunt & Kill", "Kruskal's", "Prim's", "Recursive Division", "Sidewinder", "Wilson's")));
-    solveSelector = new DropList(15, 320, 160, 20, "Solver Method", new ArrayList(Arrays.asList("A* (Manhattan)", "Breadth-First", "Depth-First", "Left-Wall", "Right-Wall")));
-    saveSelector = new DropList(15, 270, 75, 20, "Save as", new ArrayList(Arrays.asList("Text", "Image")));
+    generationSelector = new DropList(15, 180, 160, 20, "Generation Method", 
+        new ArrayList(Arrays.asList("Aldous-Broder", "BackTrack", "Binary Tree", 
+        "Blobby Recursive", "Eller's", "Houston", "Hunt & Kill", "Kruskal's", 
+        "Prim's", "Recursive Division", "Sidewinder", "Wilson's")));
+    solveSelector = new DropList(15, 320, 160, 20, "Solver Method", 
+        new ArrayList(Arrays.asList("A* (Manhattan)", "Breadth-First", 
+        "Depth-First", "Left-Wall", "Right-Wall")));
+    saveSelector = new DropList(15, 270, 75, 20, "Save as", 
+        new ArrayList(Arrays.asList("Text", "Image")));
 
     maze = new Maze(200, 5, width - 205, height - 10);
     maze.create();
@@ -84,7 +90,7 @@ void setup() {
     resetButImage = loadImage("reset-modified.png");
     skipToEnd = loadImage("skipToEnd-modified.png");
     next = loadImage("next-modified.png");
-    
+
     strokeCap(PROJECT);
 
     textAlign(CENTER, CENTER);
@@ -96,12 +102,13 @@ void draw() {
     // Gets visualisation speed from the slider
     speed = (int) speedSlider.getValue();
 
-    // If reset flag is true, reset the current generation and solver if it has been solved, then the visualisation
+    // If reset flag is true, reset the current generation and solver 
+    // if it has been solved, then the visualisation
     if (reset) {
         reset();
         reset = false;
     }
-    
+
     rectMode(CORNER);
     drawButtons();
     rectMode(CENTER);
@@ -112,7 +119,7 @@ void draw() {
 
     // Generate the maze if the generate button has been pressed
     if (!generated && generatePressed) {
-        for (int i = 0; i < speed; i++) {
+        for (int i = 0; i<speed; i++) {
             generators[selectedGeneration - 1].generate();
         }
     }
@@ -124,14 +131,14 @@ void draw() {
 
     // If start point, end point and solve button pressed, perform the solve
     if (startingPointSelected && endingPointSelected && solvePressed) {
-        for (int i = 0; i < speed; i++) {
+        for (int i = 0; i<speed; i++) {
             solvers[selectedSolver - 1].solve();
         }
     }
-    
+
     // Draw the maze and the buttons
     maze.display();
-    
+
     fill(255);
     text(frameRate, 25, 10);
 }
@@ -148,7 +155,9 @@ void mousePressed() {
     int genPressed = generationSelector.checkForPress();
     if (!generatePressed && genPressed != -1) {
         generators = new IGenerator[] {
-            new Aldous_Broder(), new Backtracker(), new Binary_Tree(), new Blobby_Recursive(), new Ellers(), new Houston(), new Hunt_Kill(), new Kruskals(), new Prims(), new Recursive_Divide(), new Side_Winder(), new Wilsons()
+            new Aldous_Broder(), new Backtracker(), new Binary_Tree(), new Blobby_Recursive(), 
+            new Ellers(), new Houston(), new Hunt_Kill(), new Kruskals(), new Prims(), 
+            new Recursive_Divide(), new Side_Winder(), new Wilsons()
         };
         selectedGeneration = genPressed;
     }
@@ -161,10 +170,10 @@ void mousePressed() {
         };
         selectedSolver = solveSelector.checkForPress();
     }
-    
+
     int savPressed = saveSelector.checkForPress();
-    if (savPressed != -1){
-      selectedSave = savPressed;
+    if (savPressed != -1) {
+        selectedSave = savPressed;
     }
 
     // If pause button pressed, pause or unpause depending on the inital flag value
@@ -176,13 +185,14 @@ void mousePressed() {
     if (solved && clearSolution.MouseIsOver() && !solveSelector.dropped) {
         maze.clearSolution();
     }
-    
-    if (generated && !startingPointSelected && !endingPointSelected && !solvePressed && save.MouseIsOver() && !saveSelector.dropped){
-      if (selectedSave == 1){
-        downloadTextMaze();
-      } else if (selectedSave == 2){
-        downloadPictureMaze();
-      }
+
+    if (generated && !startingPointSelected && !endingPointSelected && !solvePressed 
+        && save.MouseIsOver() && !saveSelector.dropped) {
+        if (selectedSave == 1) {
+            downloadTextMaze();
+        } else if (selectedSave == 2) {
+            downloadPictureMaze();
+        }
     }
 
     // Reset the points if the button is pressed
@@ -215,39 +225,39 @@ void mousePressed() {
             return;
         }
     }
-    
+
     // If skip button pressed, skip to the end of the generation
-    if (!generated & generatePressed & skipToEndBut.MouseIsOver()){
-      skipToEndGeneration();
+    if (!generated & generatePressed & skipToEndBut.MouseIsOver()) {
+        skipToEndGeneration();
     }
-    
+
     // If skip button pressed, skip to the end of the solve
-    if (!solved & solvePressed & skipToEndBut.MouseIsOver()){
-      skipToEndSolve();
+    if (!solved & solvePressed & skipToEndBut.MouseIsOver()) {
+        skipToEndSolve();
     }
-    
+
     // If next button pressed, perform an iteration of the generation 
-    if (!generated & generatePressed & nextBut.MouseIsOver()){
-      generators[selectedGeneration-1].generate();
-      maze.display();
+    if (!generated & generatePressed & nextBut.MouseIsOver()) {
+        generators[selectedGeneration - 1].generate();
+        maze.display();
     }
-    
+
     // If next button pressed, perform an iteration of the solve
-    if (!solved & solvePressed & nextBut.MouseIsOver()){
-      solvers[selectedSolver-1].solve();
+    if (!solved & solvePressed & nextBut.MouseIsOver()) {
+        solvers[selectedSolver - 1].solve();
     }
 
     // Check if the generation/solve button is pressed
     if (!generatePressed && !generationSelector.dropped && !generated && generateMaze.MouseIsOver() && selectedGeneration != 0) {
-      maze.create();
-      generatePressed = true;
-      generators[selectedGeneration-1].initialise();
+        maze.create();
+        generatePressed = true;
+        generators[selectedGeneration - 1].initialise();
     }
 
     // Check if the solve selection button has been pressed, user is limited to when they can press the buttons as to not break the visualisation interface
     if (!solvePressed && !solveSelector.dropped && startingPointSelected && endingPointSelected && selectedSolver != 0 && solveMaze.MouseIsOver()) {
         solvePressed = true;
-        solvers[selectedSolver-1].initialise(startingPoint);
+        solvers[selectedSolver - 1].initialise(startingPoint);
     }
 }
 
@@ -255,7 +265,6 @@ void mouseReleased() {
     // Lock the slider values in
     sizeSlider.release();
     speedSlider.release();
-
 }
 
 void keyPressed() {
@@ -267,9 +276,9 @@ void keyPressed() {
     if (key == 'r') {
         reset = true;
     }
-    
-    if (key == 'a'){
-      tree.build(startingPoint);
+
+    if (key == 'a') {
+        tree.build(startingPoint);
     }
 }
 
@@ -301,16 +310,16 @@ void reset() {
     maze.overwrite();
 }
 
-void skipToEndGeneration(){
-  while(!generated){
-    generators[selectedGeneration-1].generate();
-  }
+void skipToEndGeneration() {
+    while (!generated) {
+        generators[selectedGeneration - 1].generate();
+    }
 }
 
-void skipToEndSolve(){
-  while(!solved){
-    solvers[selectedSolver-1].solve();
-  }
+void skipToEndSolve() {
+    while (!solved) {
+        solvers[selectedSolver - 1].solve();
+    }
 }
 
 // Clears the start and end points selected by the user
@@ -369,7 +378,7 @@ void drawButtons() {
     } else if (!paused) {
         pauseBut.Draw(pause);
     }
-    
+
     fill(255);
     textSize(18);
     text("Configure", 95, 20);
@@ -397,24 +406,24 @@ boolean checkButton(Button button) {
 }
 
 // Exports the picture of the maze to an image
-void downloadPictureMaze(){
-  PImage mazeImage = get(maze.x - 5, maze.y - 5, maze.w + 10, maze.h + 10);
-  mazeImage.save("pictureMazes/maze" + (picMazeNumber+=1) + ".png");
+void downloadPictureMaze() {
+    PImage mazeImage = get(maze.x - 5, maze.y - 5, maze.w + 10, maze.h + 10);
+    mazeImage.save("pictureMazes/maze" + (picMazeNumber += 1) + ".png");
 }
 
 // Prints the text representation of the maze to a text file
-void downloadTextMaze(){
+void downloadTextMaze() {
     print("hello");
-  output = createWriter("textMazes/" + "/maze" + (txtMazeNumber+=1) + ".txt");
-  char[][] textVersion = maze.getTextRepresentation();
-  
-  for (int i = 0; i < textVersion[0].length; i++){
-    for (int j = 0; j < textVersion.length; j++){
-      output.print(textVersion[j][i]);
+    output = createWriter("textMazes/" + "/maze" + (txtMazeNumber += 1) + ".txt");
+    char[][] textVersion = maze.getTextRepresentation();
+
+    for (int i = 0; i<textVersion[0].length; i++) {
+        for (int j = 0; j<textVersion.length; j++) {
+            output.print(textVersion[j][i]);
+        }
+        output.println();
     }
-    output.println();
-  }
-  
-  output.flush();
-  output.close();
+
+    output.flush();
+    output.close();
 }

@@ -246,6 +246,8 @@ class Square {
         if (!generated && generatePressed){
             noStroke();
             
+            float fill_size = w - (maze.squareSize/2);
+            
             // Specific colouring methods for each generator
             switch(selectedGeneration){
             case(1):
@@ -254,7 +256,7 @@ class Square {
                 
                 if (aldousbroder.visitedSquares.containsSquare(this)){
                     fill(lerpColor(color(255, 0, 0), color(0, 255, 0), x/width ) + lerpColor(color(0, 0, 0), color(0, 0, 255), y/height ));
-                    rect(x + maze.squareSize/2, y + maze.squareSize/2, w - (maze.squareSize/2), h - (maze.squareSize/2));
+                    square(x + maze.squareSize/2, y + maze.squareSize/2, fill_size);
                 } 
                 
                 if (this == currentSquare){
@@ -268,20 +270,20 @@ class Square {
                 
                 if (backtracker.routeSquares.containsSquare(maze.getSquare(getCoords()))) {
                     fill(0, 0, 255);
-                    rect(x + maze.squareSize/2, y + maze.squareSize/2, w - (maze.squareSize/2), h - (maze.squareSize/2));
+                    square(x + maze.squareSize/2, y + maze.squareSize/2, fill_size);
                 } else if (backtracker.checkStack(this)) {
                     fill(255, 0, 0);
-                    rect(x + maze.squareSize/2, y + maze.squareSize/2, w - (maze.squareSize/2), h - (maze.squareSize/2));
+                    square(x + maze.squareSize/2, y + maze.squareSize/2, fill_size);
                 }
                 break;
             case(3):
                 // binarytree
+                noStroke();
+                
                 if (this == currentSquare){
-                    noStroke();
                     fill(0, 255, 0);
-                    rect(x + maze.squareSize/2, y + maze.squareSize/2, w - (maze.squareSize/2), h - (maze.squareSize/2));
+                    square(x + maze.squareSize/2, y + maze.squareSize/2, fill_size);
                 } else {
-                    noStroke();
                     fill(25);
                     rect(x + maze.squareSize/2, y + maze.squareSize/2, w - (maze.squareSize/4), h - (maze.squareSize/4));
                 }
@@ -295,7 +297,7 @@ class Square {
                   rect(x + maze.squareSize/2, y + maze.squareSize/2, w - 0.75 * (maze.squareSize/2), h - 0.75 * (maze.squareSize/2));
                   
                   fill(map(getSet()%17, 0, 17, 0, 255), 255, 225);
-                  rect(x + maze.squareSize/2, y + maze.squareSize/2, w - (maze.squareSize/2), h - (maze.squareSize/2));
+                  square(x + maze.squareSize/2, y + maze.squareSize/2, fill_size);
                   colorMode(RGB);
                 } else {
                   noStroke();
@@ -311,7 +313,7 @@ class Square {
                 rect(x + maze.squareSize/2, y + maze.squareSize/2, w - 0.75 * (maze.squareSize/2), h - 0.75 * (maze.squareSize/2));
                 
                 fill(map(getSet()%maze.getNumberOfRows(), 0, maze.getNumberOfRows(), 0, 255), 255, 225);
-                rect(x + maze.squareSize/2, y + maze.squareSize/2, w - (maze.squareSize/2), h - (maze.squareSize/2));
+                square(x + maze.squareSize/2, y + maze.squareSize/2, fill_size);
                 colorMode(RGB);
                 break;
                 
@@ -328,7 +330,7 @@ class Square {
                     rect(x + maze.squareSize/2, y + maze.squareSize/2, w - floor(maze.squareSize/1.5), h - floor(maze.squareSize/1.5));
                 } else if ((houston.stage == 2 && houston.wilsonsSolver.visitedSquares.containsSquare(this)) || houston.aldousSolver.visitedSquares.containsSquare(this)){
                     fill(lerpColor(color(255, 0, 0), color(0, 255, 0), x/width ) + lerpColor(color(0, 0, 0), color(0, 0, 255), y/height ));
-                    rect(x + maze.squareSize/2, y + maze.squareSize/2, w - (maze.squareSize/2), h - (maze.squareSize/2));
+                    square(x + maze.squareSize/2, y + maze.squareSize/2, fill_size);
                 } else {
                     noStroke();
                     fill(25);
@@ -341,7 +343,7 @@ class Square {
                 
                 if (huntKill.checkStack(this)) {
                     fill(lerpColor(color(212,20,90), color(0,176,176), (float) (this.y/height)));
-                    rect(x + maze.squareSize/2, y + maze.squareSize/2, w - (maze.squareSize/2), h - (maze.squareSize/2));
+                    square(x + maze.squareSize/2, y + maze.squareSize/2, fill_size);
                 }
                 break;
             case(8):
@@ -352,7 +354,7 @@ class Square {
                 rect(x + maze.squareSize/2, y + maze.squareSize/2, w - 0.75 * (maze.squareSize/2), h - 0.75 * (maze.squareSize/2));
                 
                 fill(map(getSet()%maze.getNumberOfRows(), 0, maze.getNumberOfRows(), 0, 255), 255, 225);
-                rect(x + maze.squareSize/2, y + maze.squareSize/2, w - (maze.squareSize/2), h - (maze.squareSize/2));
+                square(x + maze.squareSize/2, y + maze.squareSize/2, fill_size);
                 colorMode(RGB);
                 break;
             case(9):
@@ -361,7 +363,7 @@ class Square {
                 
                 if (prims.mainSetSquares.containsSquare(this) && !generated) {
                     fill(lerpColor(color(#FC354C), color(#0ABFBC), (float)(1.5 * (getDistanceFrom(prims.primStartSquare)) / (maze.getNumberOfRows() * Math.sqrt(2)))));
-                   rect(x + maze.squareSize/2, y + maze.squareSize/2, w - (maze.squareSize/2), h - (maze.squareSize/2));
+                   square(x + maze.squareSize/2, y + maze.squareSize/2, fill_size);
                 }
                 break;
             case(11):
@@ -371,7 +373,7 @@ class Square {
                 if (yCo == sidewind.sideY){
                     colorMode(HSB);
                     fill(map(getSet()%(maze.getNumberOfRows()), 0, maze.getNumberOfRows(), 0, 255), 255, 225);
-                    rect(x + maze.squareSize/2, y + maze.squareSize/2, w - (maze.squareSize/2), h - (maze.squareSize/2));
+                    square(x + maze.squareSize/2, y + maze.squareSize/2, fill_size);
                     colorMode(RGB);
                 } else {
                     noStroke();
@@ -393,7 +395,7 @@ class Square {
                     rect(x + maze.squareSize/2, y + maze.squareSize/2, w - floor(maze.squareSize/1.5), h - floor(maze.squareSize/1.5));
                 } else if (wilsons.visitedSquares.containsSquare(this)){
                     fill(lerpColor(color(255, 0, 0), color(0, 255, 0), x/width ) + lerpColor(color(0, 0, 0), color(0, 0, 255), y/height ));
-                    rect(x + maze.squareSize/2, y + maze.squareSize/2, w - (maze.squareSize/2), h - (maze.squareSize/2));
+                    square(x + maze.squareSize/2, y + maze.squareSize/2, fill_size);
                 } else {
                     noStroke();
                     
@@ -407,7 +409,7 @@ class Square {
         }
 
         // Draws the walls of the edges for specific generations and at the end of the generation
-        strokeWeight((int) (max(1, maze.squareSize/10)));
+        strokeWeight(1);
         stroke(255);
         if (!(selectedGeneration == 12 || selectedGeneration == 6) || 
              (selectedGeneration == 12 && ((Wilsons) generators[selectedGeneration-1]).visitedSquares.containsSquare(this)) || 
