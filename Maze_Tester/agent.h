@@ -2,6 +2,9 @@ struct solver_agent{
     int xCo;
     int yCo;
 
+    int target_x;
+    int target_y;
+
     int direction;
     
     struct stack *stack;
@@ -26,9 +29,7 @@ char getCharRightOfAgent(struct solver_agent *agent, int rows, int cols, char ma
 
 char getCharLeftOfAgent(struct solver_agent *agent, int rows, int cols, char maze[rows][cols]);
 
-void left_solve(struct solver_agent *agent, int rows, int cols, char maze[rows][cols], int* moves, int startX, int startY, int endX, int endY);
-
-void right_solve(struct solver_agent *agent, int rows, int cols, char maze[rows][cols], int* moves, int startX, int startY, int endX, int endY);
+void solve(struct solver_agent *agent, int rows, int cols, char maze[rows][cols], int* moves);
 
 void turnAgentRight(struct solver_agent *agent);
 
