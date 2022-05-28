@@ -140,40 +140,44 @@ class Path_HashMap {
  * It is used in the generation algorithms that use sets, such as Kruskals and Ellers.
  */
 class Set_Hash {
-    ArrayList < Small_Square_Hash > sets;
+    ArrayList < ArrayList <Square> > sets;
+    int currentSet;
 
     // Initialises the set hashmap with the specified size
-    Set_Hash(int size) {
+    Set_Hash() {
         sets = new ArrayList();
-        for (int i = 0; i < size; i++) {
-            sets.add(null);
-        }
+        currentSet = 0;
     }
 
     // Adds a square to the specified set number
     void addToSet(int setNumber, Square square) {
-        if (getSet(setNumber) == null) {
-            sets.set(setNumber, new Small_Square_Hash((maze.getNumberOfColumns()) + (maze.getNumberOfRows() + 1)));
+        if (setNumber < sets.size()){
+            square.setSet(setNumber);
+            sets.get(setNumber).add(square);
+            squaresToUpdate.add(square);
+        } else {
+            addNewSet(square);
         }
-
-        Small_Square_Hash set = sets.get(setNumber);
-        square.setSet(setNumber);
-        set.addSquare(square);
+    }
+    
+    void addNewSet(Square square){
+        square.setSet(this.currentSet);
+        
+        sets.add(new ArrayList());
+        sets.get(this.currentSet).add(square);
+        
+        this.currentSet++;
+        
         squaresToUpdate.add(square);
     }
 
     // Gets the small square hash for the specified set number
-    Small_Square_Hash getSet(int setNumber) {
-        Small_Square_Hash toReturn = sets.get(setNumber);
-        if (toReturn != null) {
-            return toReturn;
-        }
-        return null;
+    ArrayList<Square> getSet(int setNumber) {
+        return sets.get(setNumber);
     }
-
-    // Gets a random square from the specified set number
-    Square getRandomSquare(int setNumber) {
-        return sets.get(setNumber).allSquares.get(Math.round(random(0, sets.get(setNumber).allSquares.size() - 1)));
+    
+    void clearSet(int setNum){
+        sets.get(setNum).clear();
     }
 
     // Merges the 2 sets with the passed numbers into a single set
@@ -182,102 +186,22 @@ class Set_Hash {
             return;
         }
 
-        if (sets.get(setNumber1).allSquares.size() > sets.get(setNumber2).allSquares.size()) {
-            for (Square square: sets.get(setNumber2).allSquares) {
-                sets.get(setNumber1).addSquare(square);
+        if (sets.get(setNumber1).size() > sets.get(setNumber2).size()) {
+            for (Square square: sets.get(setNumber2)) {
+                sets.get(setNumber1).add(square);
                 square.setSet(setNumber1);
                 squaresToUpdate.add(square);
             }
 
             sets.set(setNumber2, null);
         } else {
-            for (Square square: sets.get(setNumber1).allSquares) {
-                sets.get(setNumber2).addSquare(square);
+            for (Square square: sets.get(setNumber1)) {
+                sets.get(setNumber2).add(square);
                 square.setSet(setNumber2);
                 squaresToUpdate.add(square);
             }
 
             sets.set(setNumber1, null);
         }
-    }
-}
-
-/**
- * The Small_Square_Hash class is a data structure that is used to store 
- * squares in order to decrease lookup time, it uses a hash function with 
- * a smaller range than Square_Hash as to reduce the amount of ArrayList 
- * instances.
- */
-class Small_Square_Hash {
-    ArrayList < ArrayList < Square > > squares = new ArrayList < ArrayList < Square > > ();
-    ArrayList < Square > allSquares = new ArrayList();
-
-    // Initialises the hashmap with the specified size
-    Small_Square_Hash(int capacity) {
-        for (int i = 0; i < capacity; i++) {
-            squares.add(new ArrayList < Square > ());
-        }
-    }
-
-    // Adds a square to the hashmap
-    void addSquare(Square square) {
-        squares.get(getKey(square)).add(square);
-        allSquares.add(square);
-    }
-
-    // Performs the hash function on the specified square
-    int getKey(Square square) {
-        return square.getXCo() + square.getYCo();
-    }
-
-    // Performs the hash function on the specified coordinates
-    int getKey(int xCo, int yCo) {
-        return xCo + yCo;
-    }
-
-    // Gets the square with the specified coordinates if it exists in the hash
-    Square getSquare(int xCo, int yCo) {
-
-        int hashKey = getKey(xCo, yCo);
-
-        if (hashKey < 0 || hashKey > squares.size()) {
-            return null;
-        }
-
-        ArrayList < Square > found = squares.get(hashKey);
-
-        for (Square square: found) {
-            if (square.getXCo() == xCo && square.getYCo() == yCo) {
-                return square;
-            }
-        }
-        return null;
-    }
-
-    // Checks if the passed square exists in the hashmap
-    boolean containsSquare(Square square) {
-
-        if (square == null) {
-            return false;
-        }
-
-        int keyToFind = getKey(square.getXCo(), square.getYCo());
-
-        return squares.get(keyToFind).contains(square);
-    }
-
-    // Returns a list of all squares in the hashmap
-    ArrayList < Square > getAllSquares() {
-        return allSquares;
-    }
-
-    // Removes the specified square from the hashmap
-    void removeSquare(Square square) {
-        allSquares.remove(square);
-        int keyToFind = getKey(square.getXCo(), square.getYCo());
-
-        ArrayList < Square > foundSquares = squares.get(keyToFind);
-
-        foundSquares.remove(square);
     }
 }

@@ -27,9 +27,7 @@ class A_Star implements ISolver {
     }
 
     void solve() {
-        if (solved == true) {
-            return;
-        }
+        if (solved) return;
 
         if (currentSolveSquare == endingPoint) {
             solved = true;
@@ -40,18 +38,14 @@ class A_Star implements ISolver {
             squaresToUpdate.add(currentSolveSquare);
             Square currentCheck = currentSolveSquare;
             Square parent;
-
+            
             while (!solution.containsSquare(startingPoint)) {
-                for (ArrayList arr: allElements) {
-                    if ((Square) arr.get(0) == currentCheck) {
-                        parent = (Square) arr.get(1);
-                        solution.addSquare(parent);
-                        solutionList.add(parent);
-                        currentCheck = parent;
-                        break;
-                    }
-                }
+                parent = currentCheck.getParent();
+                solution.addSquare(parent);
+                solutionList.add(parent);
+                currentCheck = parent;
             }
+            
             possibleSquares.clear();
             solveVisitedSquares = null;
             return;
@@ -62,49 +56,35 @@ class A_Star implements ISolver {
         ArrayList < Integer > toCalculate = currentSolveSquare.getPossibleDirections();
 
         if (toCalculate.contains(0)) {
-            Square foundSquare = maze.getSquareAbove(currentSolveSquare);
-            if (!solveVisitedSquares.containsSquare(foundSquare)) {
-                calculateHeuristic(foundSquare);
-                possibleSquares.add(foundSquare);
-                squaresToUpdate.add(foundSquare);
-                allElements.add(new ArrayList(Arrays.asList(foundSquare, currentSolveSquare)));
-            }
+            addSquareToPossibleNext(maze.getSquareAbove(currentSolveSquare), currentSolveSquare);
         }
 
         if (toCalculate.contains(1)) {
-            Square foundSquare = maze.getSquareRight(currentSolveSquare);
-            if (!solveVisitedSquares.containsSquare(foundSquare)) {
-                calculateHeuristic(foundSquare);
-                possibleSquares.add(foundSquare);
-                squaresToUpdate.add(foundSquare);
-                allElements.add(new ArrayList(Arrays.asList(foundSquare, currentSolveSquare)));
-            }
+            addSquareToPossibleNext(maze.getSquareRight(currentSolveSquare), currentSolveSquare);
         }
 
         if (toCalculate.contains(2)) {
-            Square foundSquare = maze.getSquareBelow(currentSolveSquare);
-            if (!solveVisitedSquares.containsSquare(foundSquare)) {
-                calculateHeuristic(foundSquare);
-                possibleSquares.add(foundSquare);
-                squaresToUpdate.add(foundSquare);
-                allElements.add(new ArrayList(Arrays.asList(foundSquare, currentSolveSquare)));
-            }
+            addSquareToPossibleNext(maze.getSquareBelow(currentSolveSquare), currentSolveSquare);
         }
 
         if (toCalculate.contains(3)) {
-            Square foundSquare = maze.getSquareLeft(currentSolveSquare);
-            if (!solveVisitedSquares.containsSquare(foundSquare)) {
-                calculateHeuristic(foundSquare);
-                possibleSquares.add(foundSquare);
-                squaresToUpdate.add(foundSquare);
-                allElements.add(new ArrayList(Arrays.asList(foundSquare, currentSolveSquare)));
-            }
+            addSquareToPossibleNext(maze.getSquareLeft(currentSolveSquare), currentSolveSquare);
         }
-
-        getLowestHSquare();
+        
+        currentSolveSquare = getLowestHSquare();
+    }
+    
+    void addSquareToPossibleNext(Square next, Square current){
+        if (!solveVisitedSquares.containsSquare(next)) {
+            next.setParent(currentSolveSquare);
+            calculateHeuristic(next);
+            possibleSquares.add(next);
+            squaresToUpdate.add(next);
+            allElements.add(new ArrayList(Arrays.asList(next, current)));
+        }
     }
 
-    void getLowestHSquare() {
+    Square getLowestHSquare() {
         Square lowestH = possibleSquares.get(0);
         for (Square square: possibleSquares) {
             if (square.getHeuristic() < lowestH.getHeuristic()) {
@@ -113,11 +93,13 @@ class A_Star implements ISolver {
         }
         possibleSquares.remove(lowestH);
         squaresToUpdate.add(lowestH);
-        currentSolveSquare = lowestH;
+        return lowestH;
     }
 
+    // Uses manhattan distance (L1-norm)
     void calculateHeuristic(Square square) {
-        square.setHeuristic(Math.abs(currentSolveSquare.getX() - endingPoint.getX()) + Math.abs(currentSolveSquare.getY() - endingPoint.getY()));
+        square.setHeuristic(Math.abs(currentSolveSquare.getX() - endingPoint.getX()) + 
+            Math.abs(currentSolveSquare.getY() - endingPoint.getY()));
     }
 }
 
@@ -145,9 +127,7 @@ class Breadth_First implements ISolver {
     }
 
     void solve() {
-        Square squareToQueue;
-
-        if (solved == true) {
+        if (solved) {
             currentSolveSquare = null;
             solveVisitedSquares = null;
             return;
@@ -156,6 +136,7 @@ class Breadth_First implements ISolver {
         currentElement = solverQueue.remove();
 
         currentSolveSquare = (Square) currentElement.get(0);
+        currentSolveSquare.setParent((Square) currentElement.get(1));
         solveVisitedSquares.addSquare(currentSolveSquare);
 
         squaresToUpdate.add(currentSolveSquare);
@@ -167,65 +148,43 @@ class Breadth_First implements ISolver {
             solutionList.add(currentSolveSquare);
             Square currentCheck = currentSolveSquare;
             Square parent;
-
+            
             while (!solution.containsSquare(startingPoint)) {
-                for (ArrayList arr: allElements) {
-                    if ((Square) arr.get(0) == currentCheck) {
-                        parent = (Square) arr.get(1);
-                        solution.addSquare(parent);
-                        solutionList.add(parent);
-                        currentCheck = parent;
-                        break;
-                    }
-                }
+                parent = currentCheck.getParent();
+                solution.addSquare(parent);
+                solutionList.add(parent);
+                currentCheck = parent;
             }
+            
             maze.generationComplete();
         }
 
         ArrayList < Integer > possibleDirections = currentSolveSquare.getPossibleDirections();
 
         if (possibleDirections.contains(0)) {
-            squareToQueue = maze.getSquare(currentSolveSquare.getXCo(), currentSolveSquare.getYCo() - 1);
-
-            if (squareToQueue != null) {
-                squareToQueue.setDistance(currentSolveSquare.getDistance() + squareToQueue.getDistanceFrom(currentSolveSquare));
-            }
-
-            addToQueue(new ArrayList(Arrays.asList(squareToQueue, currentSolveSquare)));
+            addToQueue(maze.getSquare(currentSolveSquare.getXCo(), currentSolveSquare.getYCo() - 1), currentSolveSquare);
         }
 
         if (possibleDirections.contains(1)) {
-            squareToQueue = maze.getSquare(currentSolveSquare.getXCo() + 1, currentSolveSquare.getYCo());
-
-            if (squareToQueue != null) {
-                squareToQueue.setDistance(currentSolveSquare.getDistance() + squareToQueue.getDistanceFrom(currentSolveSquare));
-            }
-
-            addToQueue(new ArrayList(Arrays.asList(squareToQueue, currentSolveSquare)));
+            addToQueue(maze.getSquare(currentSolveSquare.getXCo() + 1, currentSolveSquare.getYCo()), currentSolveSquare);
         }
 
         if (possibleDirections.contains(2)) {
-            squareToQueue = maze.getSquare(currentSolveSquare.getXCo(), currentSolveSquare.getYCo() + 1);
-
-            if (squareToQueue != null) {
-                squareToQueue.setDistance(currentSolveSquare.getDistance() + squareToQueue.getDistanceFrom(currentSolveSquare));
-            }
-
-            addToQueue(new ArrayList(Arrays.asList(squareToQueue, currentSolveSquare)));
+            addToQueue(maze.getSquare(currentSolveSquare.getXCo(), currentSolveSquare.getYCo() + 1), currentSolveSquare);
         }
 
         if (possibleDirections.contains(3)) {
-            squareToQueue = maze.getSquare(currentSolveSquare.getXCo() - 1, currentSolveSquare.getYCo());
-
-            if (squareToQueue != null) {
-                squareToQueue.setDistance(currentSolveSquare.getDistance() + squareToQueue.getDistanceFrom(currentSolveSquare));
-            }
-
-            addToQueue(new ArrayList(Arrays.asList(squareToQueue, currentSolveSquare)));
+            addToQueue(maze.getSquare(currentSolveSquare.getXCo() - 1, currentSolveSquare.getYCo()), currentSolveSquare);
         }
     }
 
-    void addToQueue(ArrayList < Square > arrList) {
+    void addToQueue(Square next, Square current) {
+        if (next != null) {
+            next.setDistance(currentSolveSquare.getDistance() + next.getDistanceFrom(currentSolveSquare));
+        }
+
+        ArrayList<Square> arrList = new ArrayList(Arrays.asList(next, current));
+        
         if (!solveVisitedSquares.containsSquare(arrList.get(0))) {
             solverQueue.add(arrList);
             allElements.add(arrList);
@@ -301,7 +260,9 @@ class Left_Wall implements ISolver {
             }
 
             solved = true;
+            
             turtle.clearPrevSquares();
+
             maze.generationComplete();
             return;
         }

@@ -35,6 +35,10 @@ class Solver_Agent {
         return direction;
     }
     
+    ArrayList<Square> getRoute(){
+        return route;
+    }
+    
     // Setters
     
     // Clear the previous squares visited by the turtle

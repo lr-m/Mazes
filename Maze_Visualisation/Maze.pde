@@ -190,13 +190,13 @@ class Maze {
       char[][] maze = new char[1 + (getNumberOfColumns()+1)*2][1 + (getNumberOfRows()+1)*2];
       if (generated){
         for (int i = 0; i < 1 + (getNumberOfColumns()+1)*2; i++){
-          maze[i][0] = 'x';
-          maze[i][(getNumberOfRows()+1)*2] = 'x';
+          maze[i][0] = '#';
+          maze[i][(getNumberOfRows()+1)*2] = '#';
         }
         
         for (int i = 0; i < 1 + (getNumberOfRows()+1)*2; i++){
-          maze[0][i] = 'x';
-          maze[(getNumberOfColumns()+1)*2][i] = 'x';
+          maze[0][i] = '#';
+          maze[(getNumberOfColumns()+1)*2][i] = '#';
         }
       }
       
@@ -205,26 +205,16 @@ class Maze {
         int yCo = square.getYCo();
         
         if (square.leftWall){
-          maze[2*xCo][1 + 2*yCo] = 'x';
-          maze[2*xCo][2 + 2*yCo] = 'x';
-          maze[2*xCo][2*yCo] = 'x';
+          maze[2*xCo][1 + 2*yCo] = '#';
+          maze[2*xCo][2 + 2*yCo] = '#';
+          maze[2*xCo][2*yCo] = '#';
         }
         
         if (square.upWall){
-          maze[1 + 2*xCo][2*yCo] = 'x';
-          maze[2*xCo][2*yCo] = 'x';
-          maze[2 + 2*xCo][2*yCo] = 'x';
+          maze[1 + 2*xCo][2*yCo] = '#';
+          maze[2*xCo][2*yCo] = '#';
+          maze[2 + 2*xCo][2*yCo] = '#';
         }
-      }
-      
-      for (int i = 0; i < 1 + (getNumberOfRows()+1)*2; i++){
-        for (int j = 0; j < 1 + (getNumberOfColumns()+1)*2; j++){
-          if(maze[j][i] != 'x'){
-            maze[j][i] = 'o';
-          }
-          output.print(maze[j][i]);
-        }
-        output.println();
       }
       
       return maze;

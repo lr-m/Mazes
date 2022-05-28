@@ -56,7 +56,7 @@ void setup() {
     clearSolution = new Button("Clear Solution", 15, 380, 160, 20);
     resetPoints = new Button("Reset Points", 15, 410, 160, 20);
 
-    sizeSlider = new Slider(20, 70, 150, 16, 4, 64);
+    sizeSlider = new Slider(20, 70, 150, 16, 4, 128);
     speedSlider = new Slider(20, 125, 150, 16, 1, 500);
 
     generationSelector = new DropList(15, 180, 160, 20, "Generation Method", 
@@ -64,10 +64,8 @@ void setup() {
         "Blobby Recursive", "Eller's", "Houston", "Hunt & Kill", "Kruskal's", 
         "Prim's", "Recursive Division", "Sidewinder", "Wilson's")));
     solveSelector = new DropList(15, 320, 160, 20, "Solver Method", 
-        new ArrayList(Arrays.asList("A* (Manhattan)", "Breadth-First", 
-        "Depth-First", "Left-Wall", "Right-Wall")));
-    saveSelector = new DropList(15, 270, 75, 20, "Save as", 
-        new ArrayList(Arrays.asList("Text", "Image")));
+        new ArrayList(Arrays.asList("A* (Manhattan)", "Breadth-First", "Depth-First", "Left-Wall", "Right-Wall")));
+    saveSelector = new DropList(15, 270, 75, 20, "Save as", new ArrayList(Arrays.asList("Text", "Image")));
 
     maze = new Maze(200, 5, width - 205, height - 10);
     maze.create();
@@ -102,8 +100,7 @@ void draw() {
     // Gets visualisation speed from the slider
     speed = (int) speedSlider.getValue();
 
-    // If reset flag is true, reset the current generation and solver 
-    // if it has been solved, then the visualisation
+    // If reset flag is true, reset the current generation and solver if it has been solved, then the visualisation
     if (reset) {
         reset();
         reset = false;
@@ -152,14 +149,15 @@ void mousePressed() {
     speedSlider.press();
 
     // If generator selected, reset all the generators to fit the maze
-    int genPressed = generationSelector.checkForPress();
-    if (!generatePressed && genPressed != -1) {
-        generators = new IGenerator[] {
-            new Aldous_Broder(), new Backtracker(), new Binary_Tree(), new Blobby_Recursive(), 
-            new Ellers(), new Houston(), new Hunt_Kill(), new Kruskals(), new Prims(), 
-            new Recursive_Divide(), new Side_Winder(), new Wilsons()
-        };
-        selectedGeneration = genPressed;
+    if (!generatePressed) {
+        int genPressed = generationSelector.checkForPress();
+        if (genPressed != -1){
+            print("hello");
+            generators = new IGenerator[] {
+                new Aldous_Broder(), new Backtracker(), new Binary_Tree(), new Blobby_Recursive(), new Ellers(), new Houston(), new Hunt_Kill(), new Kruskals(), new Prims(), new Recursive_Divide(), new Side_Winder(), new Wilsons()
+            };
+            selectedGeneration = genPressed;
+        }
     }
 
     // If solver selected, reset all the solvers to fit the maze
@@ -186,8 +184,7 @@ void mousePressed() {
         maze.clearSolution();
     }
 
-    if (generated && !startingPointSelected && !endingPointSelected && !solvePressed 
-        && save.MouseIsOver() && !saveSelector.dropped) {
+    if (generated && !startingPointSelected && !endingPointSelected && !solvePressed && save.MouseIsOver() && !saveSelector.dropped) {
         if (selectedSave == 1) {
             downloadTextMaze();
         } else if (selectedSave == 2) {
@@ -413,13 +410,17 @@ void downloadPictureMaze() {
 
 // Prints the text representation of the maze to a text file
 void downloadTextMaze() {
-    print("hello");
     output = createWriter("textMazes/" + "/maze" + (txtMazeNumber += 1) + ".txt");
     char[][] textVersion = maze.getTextRepresentation();
 
     for (int i = 0; i<textVersion[0].length; i++) {
         for (int j = 0; j<textVersion.length; j++) {
-            output.print(textVersion[j][i]);
+            if (textVersion[j][i] == '#'){
+                output.print(textVersion[j][i]);
+            } else {
+                output.print('-');
+            }
+            
         }
         output.println();
     }

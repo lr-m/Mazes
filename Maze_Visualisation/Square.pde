@@ -10,6 +10,10 @@ class Square {
     int set;
     float distance;
     float heuristic;
+    
+    Square parent;
+    
+    ArrayList<Square> children;
 
     // Constructor
     Square(float sWidth, float sHeight, float x, float y, int xCo, int yCo) {
@@ -29,6 +33,17 @@ class Square {
         this.leftWall = true;
     }
     
+    int getPathCount(){
+        int count = 0;
+        
+        if (!upWall) count++;
+        if (!downWall) count++;
+        if (!rightWall) count++;
+        if (!leftWall) count++;
+        
+        return count;
+    }
+    
     // Getters
     
     // Returns the distance between this square and the passed square
@@ -38,6 +53,14 @@ class Square {
     
     float getHeuristic(){
       return heuristic;
+    }
+    
+    void setParent(Square parent){
+        this.parent = parent;   
+    }
+    
+    Square getParent(){
+        return this.parent;
     }
     
     // Gets the distance of the square
@@ -154,6 +177,213 @@ class Square {
     // Draws the square
     void display() {
       rectMode(CENTER);
+      
+      // If starting or ending point, fill in specific colour
+      if (generated){
+            noStroke();
+            if (this == startingPoint) {
+                fill(255, 0, 0);
+                circle(x + maze.squareSize/12, y + maze.squareSize/12, min(w - (maze.squareSize/6), h - (maze.squareSize/6)));
+                return;
+            } else if (this == endingPoint) {
+                fill(0, 255, 0);
+                circle(x + maze.squareSize/12, y + maze.squareSize/12, min(w - (maze.squareSize/6), h - (maze.squareSize/6)));
+                return;
+            }
+        }
+
+        if (!generated && generatePressed){
+            noStroke();
+            
+            float fill_size = w - (maze.squareSize/2);
+            
+            // Specific colouring methods for each generator
+            switch(selectedGeneration){
+            case(1):
+                // Aldous
+                Aldous_Broder aldousbroder = (Aldous_Broder) generators[selectedGeneration-1];
+                
+                if (aldousbroder.visitedSquares.containsSquare(this)){
+                    //fill(lerpColor(color(255, 0, 0), color(0, 255, 0), x/width ) + lerpColor(color(0, 0, 0), color(0, 0, 255), y/height ));
+                    fill(25);
+                    square(x + maze.squareSize/2, y + maze.squareSize/2, fill_size);
+                } 
+                
+                if (this == currentSquare){
+                    fill(0, 255, 0);
+                    rect(x + maze.squareSize/2, y + maze.squareSize/2, w - (1.5 * maze.squareSize/2), h - (1.5 * maze.squareSize/2));
+                }
+                break;
+            case(2):
+                // backtrack
+                //Backtracker backtracker = (Backtracker) generators[selectedGeneration-1];
+
+                if (this == currentSquare){
+                    fill(0, 255, 0);
+                    rect(x + maze.squareSize/2, y + maze.squareSize/2, w - (1.5 * maze.squareSize/2), h - (1.5 * maze.squareSize/2));
+                } else {
+                    fill(25);
+                    square(x + maze.squareSize/2, y + maze.squareSize/2, fill_size);
+                }
+                
+                //if (backtracker.routeSquares.containsSquare(maze.getSquare(getCoords()))) {
+                //    fill(0, 0, 255);
+                //    square(x + maze.squareSize/2, y + maze.squareSize/2, fill_size);
+                //} else if (backtracker.checkStack(this)) {
+                //    fill(0,206,209);
+                //    square(x + maze.squareSize/2, y + maze.squareSize/2, fill_size);
+                //}
+                break;
+            case(3):
+                // binarytree
+                noStroke();
+                
+                if (this == currentSquare){
+                    fill(0, 255, 0);
+                    square(x + maze.squareSize/2, y + maze.squareSize/2, fill_size);
+                } else {
+                    fill(25);
+                    rect(x + maze.squareSize/2, y + maze.squareSize/2, w - (maze.squareSize/4), h - (maze.squareSize/4));
+                }
+                break;
+            case(4):
+                // Blobby
+                if (set != -1 && set != 0){
+                  colorMode(HSB);
+                  
+                  fill(25);
+                  rect(x + maze.squareSize/2, y + maze.squareSize/2, w - 0.75 * (maze.squareSize/2), h - 0.75 * (maze.squareSize/2));
+                  
+                  fill(map(getSet()%17, 0, 17, 0, 255), 255, 225);
+                  square(x + maze.squareSize/2, y + maze.squareSize/2, fill_size);
+                  colorMode(RGB);
+                } else {
+                  noStroke();
+                  fill(25);
+                  rect(x + maze.squareSize/2, y + maze.squareSize/2, w - (maze.squareSize/4), h - (maze.squareSize/4));
+                }
+                break;
+            case(5):
+                // Ellers
+                colorMode(HSB);
+                
+                fill(25);
+                rect(x + maze.squareSize/2, y + maze.squareSize/2, w - 0.75 * (maze.squareSize/2), h - 0.75 * (maze.squareSize/2));
+                
+                fill(map(getSet()%maze.getNumberOfRows(), 0, maze.getNumberOfRows(), 0, 255), 255, 225);
+                square(x + maze.squareSize/2, y + maze.squareSize/2, fill_size);
+                colorMode(RGB);
+                break;
+                
+            case(6):
+                // Houston
+                Houston houston = (Houston) generators[selectedGeneration-1];
+                
+                if (this == currentSquare){
+                    if (houston.stage == 1){
+                        fill(0, 255, 0);
+                        rect(x + maze.squareSize/2, y + maze.squareSize/2, w - (1.5 * maze.squareSize/2), h - (1.5 * maze.squareSize/2));
+                    } else if (houston.endStage) {
+                        fill(25);
+                        square(x + maze.squareSize/2, y + maze.squareSize/2, fill_size);
+                        houston.endStage = false;
+                    }
+                }
+               
+                else if (houston.wilsonsSolver.currentWalk!=null && houston.wilsonsSolver.currentWalk.containsSquare(this)){
+                    noStroke();
+                    
+                    fill(25);
+                    rect(x + maze.squareSize/2, y + maze.squareSize/2, w - 0.75 * (maze.squareSize/2), h - 0.75 * (maze.squareSize/2));
+                    
+                    fill(255);
+                    rect(x + maze.squareSize/2, y + maze.squareSize/2, w - floor(maze.squareSize/2), h - floor(maze.squareSize/2));
+                } else if ((houston.stage == 2 && houston.wilsonsSolver.visitedSquares.containsSquare(this)) || houston.aldousSolver.visitedSquares.containsSquare(this)){
+                    //fill(lerpColor(color(255, 0, 0), color(0, 255, 0), x/width ) + lerpColor(color(0, 0, 0), color(0, 0, 255), y/height ));
+                    fill(25);
+                    square(x + maze.squareSize/2, y + maze.squareSize/2, fill_size);
+                } else {
+                    noStroke();
+                    
+                    fill(25);
+                    rect(x + maze.squareSize/2, y + maze.squareSize/2, w-0.5, h-0.5);
+                }
+                
+                
+                
+                break;
+            case(7):
+                // Hunt & Kill
+                Hunt_Kill huntKill = (Hunt_Kill) generators[selectedGeneration-1];
+                
+                if (huntKill.checkStack(this)) {
+                    fill(lerpColor(color(212,20,90), color(0,176,176), (float) (this.y/height)));
+                    square(x + maze.squareSize/2, y + maze.squareSize/2, fill_size);
+                }
+                break;
+            case(8):
+                // Kruskal
+                colorMode(HSB);
+                
+                fill(25);
+                rect(x + maze.squareSize/2, y + maze.squareSize/2, w - 0.75 * (maze.squareSize/2), h - 0.75 * (maze.squareSize/2));
+                
+                fill(map(getSet()%maze.getNumberOfRows(), 0, maze.getNumberOfRows(), 0, 255), 255, 225);
+                square(x + maze.squareSize/2, y + maze.squareSize/2, fill_size);
+                colorMode(RGB);
+                break;
+            case(9):
+                // Prims
+                Prims prims = (Prims) generators[selectedGeneration-1];
+                
+                //if (prims.mainSetSquares.containsSquare(this) && !generated) {
+                //    fill(lerpColor(color(#FC354C), color(#0ABFBC), (float)(1.5 * (getDistanceFrom(prims.primStartSquare)) / (maze.getNumberOfRows() * Math.sqrt(2)))));
+                //   square(x + maze.squareSize/2, y + maze.squareSize/2, fill_size);
+                //}
+                break;
+            case(11):
+                // SideWinder
+                Side_Winder sidewind = (Side_Winder) generators[selectedGeneration-1];
+                
+                if (yCo == sidewind.sideY){
+                    colorMode(HSB);
+                    fill(map(getSet()%(maze.getNumberOfRows()), 0, maze.getNumberOfRows(), 0, 255), 255, 225);
+                    square(x + maze.squareSize/2, y + maze.squareSize/2, fill_size);
+                    colorMode(RGB);
+                } else {
+                    noStroke();
+                    fill(25);
+                    rect(x + maze.squareSize/2, y + maze.squareSize/2, w - (maze.squareSize/4), h - (maze.squareSize/4));
+                }
+                break;
+            case(12):
+                // Wilson
+                Wilsons wilsons = (Wilsons) generators[selectedGeneration-1];
+                
+                if (wilsons.currentWalk.containsSquare(this)){
+                    noStroke();
+                    
+                    fill(25);
+                    rect(x + maze.squareSize/2, y + maze.squareSize/2, w - 0.75 * (maze.squareSize/2), h - 0.75 * (maze.squareSize/2));
+                    
+                    fill(255);
+                    rect(x + maze.squareSize/2, y + maze.squareSize/2, w - floor(maze.squareSize/1.5), h - floor(maze.squareSize/1.5));
+                } else if (wilsons.visitedSquares.containsSquare(this)){
+                    //fill(lerpColor(color(255, 0, 0), color(0, 255, 0), x/width ) + lerpColor(color(0, 0, 0), color(0, 0, 255), y/height ));
+                    fill(25);
+                    square(x + maze.squareSize/2, y + maze.squareSize/2, fill_size);
+                } else {
+                    noStroke();
+                    
+                    fill(25);
+                    rect(x + maze.squareSize/2, y + maze.squareSize/2, w, h);
+                }
+                break;
+             default:
+                break;
+            }
+        }
+        
         if(generated && !solved && solvePressed) {
             noStroke();
             
@@ -230,187 +460,42 @@ class Square {
                     break;
             }
         }
-        
-        // If starting or ending point, fill in specific colour
-        if (generated){
-            noStroke();
-            if (this == startingPoint) {
-                fill(255, 0, 0);
-                circle(x + maze.squareSize/12, y + maze.squareSize/12, min(w - (maze.squareSize/6), h - (maze.squareSize/6)));
-            } else if (this == endingPoint) {
-                fill(0, 255, 0);
-                circle(x + maze.squareSize/12, y + maze.squareSize/12, min(w - (maze.squareSize/6), h - (maze.squareSize/6)));
-            }
-        }
-
-        if (!generated && generatePressed){
-            noStroke();
-            
-            float fill_size = w - (maze.squareSize/2);
-            
-            // Specific colouring methods for each generator
-            switch(selectedGeneration){
-            case(1):
-                // Aldous
-                Aldous_Broder aldousbroder = (Aldous_Broder) generators[selectedGeneration-1];
-                
-                if (aldousbroder.visitedSquares.containsSquare(this)){
-                    fill(lerpColor(color(255, 0, 0), color(0, 255, 0), x/width ) + lerpColor(color(0, 0, 0), color(0, 0, 255), y/height ));
-                    square(x + maze.squareSize/2, y + maze.squareSize/2, fill_size);
-                } 
-                
-                if (this == currentSquare){
-                    fill(0, 255, 0);
-                    rect(x + maze.squareSize/2, y + maze.squareSize/2, w - (1.5 * maze.squareSize/2), h - (1.5 * maze.squareSize/2));
-                }
-                break;
-            case(2):
-                // backtrack
-                Backtracker backtracker = (Backtracker) generators[selectedGeneration-1];
-                
-                if (backtracker.routeSquares.containsSquare(maze.getSquare(getCoords()))) {
-                    fill(0, 0, 255);
-                    square(x + maze.squareSize/2, y + maze.squareSize/2, fill_size);
-                } else if (backtracker.checkStack(this)) {
-                    fill(255, 0, 0);
-                    square(x + maze.squareSize/2, y + maze.squareSize/2, fill_size);
-                }
-                break;
-            case(3):
-                // binarytree
-                noStroke();
-                
-                if (this == currentSquare){
-                    fill(0, 255, 0);
-                    square(x + maze.squareSize/2, y + maze.squareSize/2, fill_size);
-                } else {
-                    fill(25);
-                    rect(x + maze.squareSize/2, y + maze.squareSize/2, w - (maze.squareSize/4), h - (maze.squareSize/4));
-                }
-                break;
-            case(4):
-                // Blobby
-                if (set != -1 && set != 0){
-                  colorMode(HSB);
-                  
-                  fill(25);
-                  rect(x + maze.squareSize/2, y + maze.squareSize/2, w - 0.75 * (maze.squareSize/2), h - 0.75 * (maze.squareSize/2));
-                  
-                  fill(map(getSet()%17, 0, 17, 0, 255), 255, 225);
-                  square(x + maze.squareSize/2, y + maze.squareSize/2, fill_size);
-                  colorMode(RGB);
-                } else {
-                  noStroke();
-                  fill(25);
-                  rect(x + maze.squareSize/2, y + maze.squareSize/2, w - (maze.squareSize/4), h - (maze.squareSize/4));
-                }
-                break;
-            case(5):
-                // Ellers
-                colorMode(HSB);
-                
-                fill(25);
-                rect(x + maze.squareSize/2, y + maze.squareSize/2, w - 0.75 * (maze.squareSize/2), h - 0.75 * (maze.squareSize/2));
-                
-                fill(map(getSet()%maze.getNumberOfRows(), 0, maze.getNumberOfRows(), 0, 255), 255, 225);
-                square(x + maze.squareSize/2, y + maze.squareSize/2, fill_size);
-                colorMode(RGB);
-                break;
-                
-            case(6):
-                // Houston
-                Houston houston = (Houston) generators[selectedGeneration-1];
-                if (houston.wilsonsSolver.currentWalk!=null && houston.wilsonsSolver.currentWalk.containsSquare(this)){
-                    noStroke();
-                    
-                    fill(25);
-                    rect(x + maze.squareSize/2, y + maze.squareSize/2, w - 0.75 * (maze.squareSize/2), h - 0.75 * (maze.squareSize/2));
-                    
-                    fill(255);
-                    rect(x + maze.squareSize/2, y + maze.squareSize/2, w - floor(maze.squareSize/1.5), h - floor(maze.squareSize/1.5));
-                } else if ((houston.stage == 2 && houston.wilsonsSolver.visitedSquares.containsSquare(this)) || houston.aldousSolver.visitedSquares.containsSquare(this)){
-                    fill(lerpColor(color(255, 0, 0), color(0, 255, 0), x/width ) + lerpColor(color(0, 0, 0), color(0, 0, 255), y/height ));
-                    square(x + maze.squareSize/2, y + maze.squareSize/2, fill_size);
-                } else {
-                    noStroke();
-                    fill(25);
-                    rect(x + maze.squareSize/2, y + maze.squareSize/2, w - (maze.squareSize/4), h - (maze.squareSize/4));
-                }
-                break;
-            case(7):
-                // Hunt & Kill
-                Hunt_Kill huntKill = (Hunt_Kill) generators[selectedGeneration-1];
-                
-                if (huntKill.checkStack(this)) {
-                    fill(lerpColor(color(212,20,90), color(0,176,176), (float) (this.y/height)));
-                    square(x + maze.squareSize/2, y + maze.squareSize/2, fill_size);
-                }
-                break;
-            case(8):
-                // Kruskal
-                colorMode(HSB);
-                
-                fill(25);
-                rect(x + maze.squareSize/2, y + maze.squareSize/2, w - 0.75 * (maze.squareSize/2), h - 0.75 * (maze.squareSize/2));
-                
-                fill(map(getSet()%maze.getNumberOfRows(), 0, maze.getNumberOfRows(), 0, 255), 255, 225);
-                square(x + maze.squareSize/2, y + maze.squareSize/2, fill_size);
-                colorMode(RGB);
-                break;
-            case(9):
-                // Prims
-                Prims prims = (Prims) generators[selectedGeneration-1];
-                
-                if (prims.mainSetSquares.containsSquare(this) && !generated) {
-                    fill(lerpColor(color(#FC354C), color(#0ABFBC), (float)(1.5 * (getDistanceFrom(prims.primStartSquare)) / (maze.getNumberOfRows() * Math.sqrt(2)))));
-                   square(x + maze.squareSize/2, y + maze.squareSize/2, fill_size);
-                }
-                break;
-            case(11):
-                // SideWinder
-                Side_Winder sidewind = (Side_Winder) generators[selectedGeneration-1];
-                
-                if (yCo == sidewind.sideY){
-                    colorMode(HSB);
-                    fill(map(getSet()%(maze.getNumberOfRows()), 0, maze.getNumberOfRows(), 0, 255), 255, 225);
-                    square(x + maze.squareSize/2, y + maze.squareSize/2, fill_size);
-                    colorMode(RGB);
-                } else {
-                    noStroke();
-                    fill(25);
-                    rect(x + maze.squareSize/2, y + maze.squareSize/2, w - (maze.squareSize/4), h - (maze.squareSize/4));
-                }
-                break;
-            case(12):
-                // Wilson
-                Wilsons wilsons = (Wilsons) generators[selectedGeneration-1];
-                
-                if (wilsons.currentWalk.containsSquare(this)){
-                    noStroke();
-                    
-                    fill(25);
-                    rect(x + maze.squareSize/2, y + maze.squareSize/2, w - 0.75 * (maze.squareSize/2), h - 0.75 * (maze.squareSize/2));
-                    
-                    fill(255);
-                    rect(x + maze.squareSize/2, y + maze.squareSize/2, w - floor(maze.squareSize/1.5), h - floor(maze.squareSize/1.5));
-                } else if (wilsons.visitedSquares.containsSquare(this)){
-                    fill(lerpColor(color(255, 0, 0), color(0, 255, 0), x/width ) + lerpColor(color(0, 0, 0), color(0, 0, 255), y/height ));
-                    square(x + maze.squareSize/2, y + maze.squareSize/2, fill_size);
-                } else {
-                    noStroke();
-                    
-                    fill(25);
-                    rect(x + maze.squareSize/2, y + maze.squareSize/2, w, h);
-                }
-                break;
-             default:
-                break;
-            }
-        }
 
         // Draws the walls of the edges for specific generations and at the end of the generation
         strokeWeight(1);
         stroke(255);
+        
+        if (!(selectedGeneration == 12 || selectedGeneration == 6) || 
+             (selectedGeneration == 12 && ((Wilsons) generators[selectedGeneration-1]).visitedSquares.containsSquare(this)) || 
+             (selectedGeneration == 6 && ((((Houston) generators[selectedGeneration-1]).stage == 2 && 
+             ((Houston) generators[selectedGeneration-1]).wilsonsSolver.visitedSquares.containsSquare(this)) || 
+             (((Houston) generators[selectedGeneration-1]).aldousSolver.visitedSquares.containsSquare(this))))){
+          if (upWall) {
+              line(x, y, x + w, y);
+          }
+          
+          if (leftWall) {
+              line(x, y, x, y + h);
+          }
+  
+          if (downWall) {
+              line(x, y + h, x + w, y + h);
+          }
+  
+          if (rightWall) {
+              line(x + w, y, x + w, y + h);
+          }
+        }
+    }
+    
+    void drawCleared(){
+        // Draws the walls of the edges for specific generations and at the end of the generation
+        strokeWeight(1);
+        stroke(255);
+        
+        fill(25);
+        rect(x + maze.squareSize/2, y + maze.squareSize/2, w, h);
+        
         if (!(selectedGeneration == 12 || selectedGeneration == 6) || 
              (selectedGeneration == 12 && ((Wilsons) generators[selectedGeneration-1]).visitedSquares.containsSquare(this)) || 
              (selectedGeneration == 6 && ((((Houston) generators[selectedGeneration-1]).stage == 2 && 

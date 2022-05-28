@@ -312,10 +312,8 @@ class Blobby_Recursive implements IGenerator {
     boolean nextSet = true;
 
     int setNumberToDivide;
-    Small_Square_Hash setSquares;
-    Square[] randSquares;
-    ArrayList < Square > frontier0;
-    ArrayList < Square > frontier1;
+    ArrayList < Square > setSquares;
+    ArrayList < Square > frontier;
     int set0;
     int set1;
     ArrayList < Path > potentialPaths;
@@ -332,13 +330,15 @@ class Blobby_Recursive implements IGenerator {
         nextSet = true;
       
         maze.clear();
-        sets = new Set_Hash(2 * (maze.getNumberOfRows() + 1) * (maze.getNumberOfColumns() + 1));
+        sets = new Set_Hash();
   
         for (Square square: maze.getSquares()) {
             sets.addToSet(0, square);
         }
   
         setNumbersToDivide.add(0);
+        
+        frontier = new ArrayList();
     }
 
     void generate() {
@@ -346,79 +346,71 @@ class Blobby_Recursive implements IGenerator {
             return;
         }
 
-        while (setNumbersToDivide.size() > 0 || !nextSet) {
+        if (setNumbersToDivide.size() > 0 || !nextSet) {
             if (nextSet) {
                 nextSet();
                 nextSet = false;
             }
+            
+            ArrayList < Square > newFrontier;
 
-            while (frontier0.size() > 0 || frontier1.size() > 0) {
-                ArrayList < Square > newFrontier = new ArrayList(frontier0);
+            if (frontier.size() > 0) {
+                newFrontier = new ArrayList();
 
-                for (Square frontierSquare: frontier0) {
-                    if (random(1) > 0.5) {
+                for (Square frontierSquare: frontier) {
+                    if (random(1) > 0.4) {
                         for (Square square: maze.getSquareNeighbours(frontierSquare)) {
-                            if (sets.getSet(set1).containsSquare(square)) {
-                                potentialPaths.add(new Path(frontierSquare, square));
-                            }
-
-                            if (setSquares.containsSquare(square) && !sets.getSet(set1).containsSquare(square) && (square.getSet() == setNumberToDivide || square.getSet() == set1)) {
+                            if ((frontierSquare.getSet() == set0 && square.getSet() == set1) ||
+                                (frontierSquare.getSet() == set1 && square.getSet() == set0)) {
+                                potentialPaths.add(new Path(square, frontierSquare));
+                            } else if (square.getSet() == setNumberToDivide) {
                                 newFrontier.add(square);
-                                sets.addToSet(set0, square);
+                                sets.addToSet(frontierSquare.getSet(), square);
                             }
                         }
-                        newFrontier.remove(frontierSquare);
+                    } else {
+                        newFrontier.add(frontierSquare);
                     }
                 }
 
-                frontier0 = newFrontier;
-
-                newFrontier = new ArrayList(frontier1);
-
-                for (Square frontierSquare: frontier1) {
-                    if (random(1) > 0.5) {
-                        for (Square square: maze.getSquareNeighbours(frontierSquare)) {
-                            if (setSquares.containsSquare(square) && !sets.getSet(set0).containsSquare(square) && (square.getSet() == setNumberToDivide || square.getSet() == set0)) {
-                                newFrontier.add(square);
-                                sets.addToSet(set1, square);
-                            }
-                        }
-                        newFrontier.remove(frontierSquare);
-                    }
-                }
-
-                frontier1 = newFrontier;
+                frontier = newFrontier;
                 return;
             }
 
-            if (sets.getSet(set0).allSquares.size() >= 4) {
+            if (sets.getSet(set0).size() >= 4) {
                 setNumbersToDivide.add(set0);
             } else {
-                for (Square square: sets.getSet(set0).allSquares) {
+                for (Square square: sets.getSet(set0)) {
                     square.setSet(-1);
                     squaresToUpdate.add(square);
                 }
+                sets.clearSet(set0);
             }
 
-            if (sets.getSet(set1).allSquares.size() >= 4) {
+            if (sets.getSet(set1).size() >= 4) {
                 setNumbersToDivide.add(set1);
             } else {
-                for (Square square: sets.getSet(set1).allSquares) {
+                for (Square square: sets.getSet(set1)) {
                     square.setSet(-1);
                     squaresToUpdate.add(square);
                 }
+                sets.clearSet(set1);
             }
 
             if (potentialPaths.size() > 0) {
-                maze.paths.addPath(potentialPaths.remove(Math.round(random(0, potentialPaths.size() - 1))), false);
-
                 for (Path path: potentialPaths) {
                     path.addWallBetween();
+                    squaresToUpdate.add(path.startSquare);
                 }
+                
+                maze.paths.addPath(potentialPaths.remove(Math.round(random(0, potentialPaths.size() - 1))), false);
             }
 
             potentialPaths.clear();
             nextSet = true;
+            
+            sets.clearSet(setNumberToDivide);
+            
             return;
         }
 
@@ -432,37 +424,27 @@ class Blobby_Recursive implements IGenerator {
 
         setSquares = sets.getSet(setNumberToDivide);
 
-        randSquares = getRandomSeeds(setNumberToDivide);
-
-        frontier0 = new ArrayList();
-        frontier1 = new ArrayList();
-
-        frontier0.add(randSquares[0]);
-        frontier1.add(randSquares[1]);
+        getRandomSeeds(setNumberToDivide, frontier);
 
         set0 = setNumber += 1;
-        set1 = (int) Math.floor(((maze.getNumberOfRows() + 1) * (maze.getNumberOfColumns() + 1)) / 2) + setNumber;
+        set1 = setNumber += 1;
 
-        sets.addToSet(set0, randSquares[0]);
-        sets.addToSet(set1, randSquares[1]);
+        sets.addToSet(set0, frontier.get(frontier.size()-1));
+        sets.addToSet(set1, frontier.get(frontier.size()-2));
 
         potentialPaths = new ArrayList();
     }
 
-    Square[] getRandomSeeds(int setNumber) {
-        Square seed1 = sets.getRandomSquare(setNumber);
-        Square seed2 = sets.getRandomSquare(setNumber);
+    void getRandomSeeds(int setNumber, ArrayList<Square> frontier) {
+        Square seed1 = sets.getSet(setNumber).get(Math.round(random(0, sets.getSet(setNumber).size()-1)));
+        Square seed2 = sets.getSet(setNumber).get(Math.round(random(0, sets.getSet(setNumber).size()-1)));
 
         while (seed2 == seed1) {
-            seed2 = sets.getRandomSquare(setNumber);
+            seed2 = sets.getSet(setNumber).get(Math.round(random(0, sets.getSet(setNumber).size()-1)));
         }
 
-        Square[] squares = {
-            seed1,
-            seed2
-        };
-
-        return squares;
+        frontier.add(seed1);
+        frontier.add(seed2);
     }
 }
 
@@ -488,7 +470,7 @@ class Ellers implements IGenerator {
       this.lastRow = false;
       this.setsWithDownPaths = new ArrayList();
       
-      this.ellersSets = new Set_Hash((maze.getNumberOfRows() + 1) * (maze.getNumberOfColumns() + 1));
+      this.ellersSets = new Set_Hash();
     }
 
     void generate() {
@@ -642,6 +624,9 @@ class Hunt_Kill implements IGenerator {
     boolean mode;
     ArrayList < Square > remainingSquaresInMaze;
     Square_HashMap visitedSquares;
+    
+    int leftMostCol = 0;
+    int highestRow = 0;
 
     Hunt_Kill() {}
     
@@ -653,7 +638,10 @@ class Hunt_Kill implements IGenerator {
         this.mode = true;
         this.remainingSquaresInMaze = new ArrayList();
         
-        currentSquare = maze.getSquare(Math.round(random(0, maze.getNumberOfColumns())), Math.round(random(0, maze.getNumberOfRows())));
+        highestRow = Math.round(random(0, maze.getNumberOfRows()));
+        leftMostCol = Math.round(random(0, maze.getNumberOfColumns()));
+        
+        currentSquare = maze.getSquare(leftMostCol, highestRow);
         currentSquare.setSet(1);
 
         visitedSquares = new Square_HashMap((int) Math.pow(maze.getNumberOfColumns(), 2));
@@ -668,9 +656,7 @@ class Hunt_Kill implements IGenerator {
     }
 
     void generate() {
-        if (generated) {
-            return;
-        }
+        if (generated) return;
         
         squaresToUpdate.add(currentSquare);
 
@@ -692,8 +678,8 @@ class Hunt_Kill implements IGenerator {
     }
 
     void hunt() {
-        // Scan grid for unvisited cell next to a visited cell    
         for (Square square: remainingSquaresInMaze) {
+            
             Square found = nextToVisitedSquare(square);
             if (found != null && !atDeadEnd(found)) {
 
@@ -910,9 +896,10 @@ class Hunt_Kill implements IGenerator {
  * Implements Kruskals algorithm for maze generation.
  */
 class Kruskals implements IGenerator {
-    Set_Hash kruskalsSets;
     int setNumber;
     ArrayList < Integer > remainingPaths;
+    ArrayList < Integer > paths;
+    ArrayList < ArrayList< Square > > sets;
 
     Kruskals() {}
     
@@ -923,9 +910,14 @@ class Kruskals implements IGenerator {
     void initialise(){
         this.setNumber = 0;
         this.remainingPaths = new ArrayList();
+
+        sets = new ArrayList<ArrayList< Square >>();
         
-        kruskalsSets = new Set_Hash((maze.getNumberOfRows() + 1) * (maze.getNumberOfColumns() + 1));
-        getAllPossiblePaths();
+        paths = new ArrayList<Integer>();
+        
+        for (int i = 0; i < maze.squares.size() * 2; i++){
+            paths.add(i);
+        }
     }
 
     void generate() {
@@ -933,50 +925,36 @@ class Kruskals implements IGenerator {
             return;
         }
 
-        int rand = 0;
-
         boolean valid = false;
 
-        int startX = 0, startY = 0, endX = 0, endY = 0;
         Square startSquare = null, endSquare = null;
 
         while (valid == false) {
-            do {
-                try {
-                    rand = remainingPaths.get(Math.round(random(0, remainingPaths.size() - 1)));
-                } catch (Exception NullPointerException) {
-                    generated = true;
-                    maze.generationComplete();
-                    return;
-                }
+            int selectedPath = paths.remove(Math.round(random(0, paths.size()-1)));
+            
+            if (paths.size() == 0){
+                generated = true;
+                maze.generationComplete();
+                return;
+            }
+            
+            startSquare = maze.squares.get((int) Math.floor(selectedPath/2));
+            
+            switch (selectedPath % 2){
+                case 0:
+                    endSquare = maze.getSquareBelow(startSquare);
+                    break;
+                case 1:
+                    endSquare = maze.getSquareRight(startSquare);
+                    break;
+            }
+            
+            if (endSquare == null){
+                continue;
+            }
 
-                remainingPaths.remove((Integer) rand);
-
-                if (rand < ((maze.getNumberOfColumns()) * (maze.getNumberOfRows() + 1))) {
-                    startX = rand % (maze.getNumberOfColumns());
-                    startY = (int)(rand / (maze.getNumberOfColumns()));
-
-                    endX = 1 + (rand % (maze.getNumberOfColumns()));
-                    endY = (int)((rand / (maze.getNumberOfColumns())));
-
-                    startSquare = maze.getSquare(startX, startY);
-                    endSquare = maze.getSquare(endX, endY);
-                } else {
-                    rand -= (maze.getNumberOfRows() + 1) * (maze.getNumberOfColumns());
-
-                    startX = rand % (maze.getNumberOfColumns() + 1);
-                    startY = (int)(rand / (maze.getNumberOfColumns()));
-
-                    endX = rand % (maze.getNumberOfColumns() + 1);
-                    endY = 1 + (int)((rand / (maze.getNumberOfColumns())));
-
-                    startSquare = maze.getSquare(startX, startY);
-                    endSquare = maze.getSquare(endX, endY);
-                }
-
-            } while (startSquare == null || endSquare == null);
-
-            if (startSquare.getSet() == endSquare.getSet() && (startSquare.getSet() != -1 && endSquare.getSet() != -1)) {
+            if ((startSquare.getSet() == endSquare.getSet()) 
+                    && startSquare.getSet() != -1) {
                 continue;
             } else {
                 valid = true;
@@ -987,28 +965,59 @@ class Kruskals implements IGenerator {
             newPath.removeWallBetween(true);
 
             if (startSquare.getSet() != -1 && endSquare.getSet() != -1) {
-                kruskalsSets.mergeSets(endSquare.getSet(), startSquare.getSet());
+                int startSetSize = sets.get(startSquare.getSet()).size();
+                int endSetSize = sets.get(endSquare.getSet()).size();
+                
+                int startSquareInitSet = startSquare.getSet();
+                int endSquareInitSet = endSquare.getSet();
+                
+                if (startSetSize > endSetSize){
+                    while(sets.get(endSquareInitSet).size() > 0){
+                        Square movingSquare = sets.get(endSquareInitSet).remove(sets.get(endSquareInitSet).size()-1);
+                        
+                        movingSquare.setSet(startSquare.getSet());
+                        
+                        sets.get(startSquare.getSet()).add(movingSquare);
+                        
+                        squaresToUpdate.add(movingSquare);
+                    }
+                } else if (startSetSize <= endSetSize){
+                    while(sets.get(startSquareInitSet).size() > 0){
+                        Square movingSquare = sets.get(startSquareInitSet).remove(sets.get(startSquareInitSet).size()-1);
+                        
+                        movingSquare.setSet(endSquare.getSet());
+                        
+                        sets.get(endSquare.getSet()).add(movingSquare);
+                        
+                        squaresToUpdate.add(movingSquare);
+                    }
+                }
             }
 
             if (startSquare.getSet() != -1 && endSquare.getSet() == -1) {
-                kruskalsSets.addToSet(startSquare.getSet(), endSquare);
+                endSquare.setSet(startSquare.getSet());
+                sets.get(startSquare.getSet()).add(endSquare);
             }
 
             if (startSquare.getSet() == -1 && endSquare.getSet() != -1) {
-                kruskalsSets.addToSet(endSquare.getSet(), startSquare);
+                startSquare.setSet(endSquare.getSet());
+                sets.get(endSquare.getSet()).add(startSquare);
             }
 
             if (startSquare.getSet() == -1 && endSquare.getSet() == -1) {
-                kruskalsSets.addToSet(setNumber, startSquare);
-                kruskalsSets.addToSet(setNumber, endSquare);
-                setNumber++;
+                sets.add(new ArrayList<Square>());
+                
+                startSquare.setSet(this.setNumber);
+                endSquare.setSet(this.setNumber);
+                
+                sets.get(this.setNumber).add(startSquare);
+                sets.get(this.setNumber).add(endSquare);
+                
+                this.setNumber++;
             }
-        }
-    }
-
-    void getAllPossiblePaths() {
-        for (int i = 0; i < (((maze.getNumberOfColumns() + 1) * (maze.getNumberOfRows())) + ((maze.getNumberOfColumns()) * (maze.getNumberOfRows() + 1))); i++) {
-            remainingPaths.add(i);
+            
+            squaresToUpdate.add(startSquare);
+            squaresToUpdate.add(endSquare);
         }
     }
 }
@@ -1311,7 +1320,7 @@ class Side_Winder implements IGenerator {
         this.setNumber = 0;
         this.setsAddedToRow = new ArrayList();
       
-        rowRunSets = new Set_Hash((maze.getNumberOfRows() + 1) * (maze.getNumberOfColumns() + 1));
+        rowRunSets = new Set_Hash();
         clearTopRow();
     }
 
@@ -1322,11 +1331,11 @@ class Side_Winder implements IGenerator {
 
         if (sideX <= maze.getNumberOfColumns()) {
             Square currentSquare = maze.getSquare(sideX, sideY);
-
+            
             rowRunSets.addToSet(setNumber, currentSquare);
-
+            
             squaresToUpdate.add(currentSquare);
-
+            
             if (sideX != maze.getNumberOfColumns()) {
                 if (random(1) < 0.5) {
                     maze.getPaths().addPath(new Path(currentSquare, maze.getSquare(currentSquare.getXCo() + 1, currentSquare.getYCo())), true);
@@ -1346,14 +1355,13 @@ class Side_Winder implements IGenerator {
 
         if (sideY < maze.getNumberOfRows()) {
             for (Integer setNumber: setsAddedToRow) {
-                Small_Square_Hash set = rowRunSets.getSet(setNumber);
-                int rand = Math.round(random(0, set.allSquares.size() - 1));
+                int rand = Math.round(random(0, rowRunSets.getSet(setNumber).size() - 1));
 
-                Square selectedSquare = set.allSquares.get(rand);
+                Square selectedSquare = rowRunSets.getSet(setNumber).get(rand);
 
                 maze.getPaths().addPath(new Path(selectedSquare, maze.getSquare(selectedSquare.getXCo(), selectedSquare.getYCo() - 1)), true);
 
-                for (Square square: set.allSquares) {
+                for (Square square: rowRunSets.getSet(setNumber)) {
                     squaresToUpdate.add(square);
                 }
             }
@@ -1361,10 +1369,9 @@ class Side_Winder implements IGenerator {
             sideY++;
         } else {
             for (Integer setNumber: setsAddedToRow) {
-                Small_Square_Hash set = rowRunSets.getSet(setNumber);
-                int rand = Math.round(random(0, set.allSquares.size() - 1));
+                int rand = Math.round(random(0, rowRunSets.getSet(setNumber).size() - 1));
 
-                Square selectedSquare = set.allSquares.get(rand);
+                Square selectedSquare = rowRunSets.getSet(setNumber).get(rand);
 
                 maze.getPaths().addPath(new Path(selectedSquare, maze.getSquare(selectedSquare.getXCo(), selectedSquare.getYCo() - 1)), true);
             }
@@ -1372,7 +1379,6 @@ class Side_Winder implements IGenerator {
             currentSquare = null;
             generated = true;
             maze.generationComplete();
-            generated = true;
         }
     }
 
@@ -1536,6 +1542,7 @@ class Houston implements IGenerator{
   Aldous_Broder aldousSolver;
   Wilsons wilsonsSolver;
   int stage;
+  boolean endStage;
   
   String getName(){
      return "12_houston";
@@ -1546,6 +1553,7 @@ class Houston implements IGenerator{
       this.wilsonsSolver = new Wilsons();
       
       this.stage = 1;
+      this.endStage = false;
       
       aldousSolver.initialise();
   }
@@ -1564,6 +1572,7 @@ class Houston implements IGenerator{
       wilsonsSolver.visitedSquares = aldousSolver.visitedSquares;
       wilsonsSolver.numAdded = Math.round((maze.getNumberOfRows() * maze.getNumberOfColumns())/5);
       stage = 2;
+      this.endStage = true;
     } else {
       wilsonsSolver.generate(); 
     }
