@@ -2,9 +2,8 @@
 Visualisation of various maze generation algorithms, as well as solvers. Plus a maze benchmarker.
 
 ### Maze_Visualisation:
-- Contains the  application, download and run the .exe to see the Maze Visualisation application.
 - Contains the source code for the application, written in Java/Processing.
-- NOTE: Some of the visualisations run VERY slow on lower square sizes (namely Kruskals and Blobby Recursive, Ellers sometimes stutters as well)
+- NOTE: Blobby recursive lags on high speeds with low square size
 
 Screenshots:
 
