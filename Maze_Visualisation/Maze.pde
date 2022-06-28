@@ -185,6 +185,13 @@ class Maze {
       return squareWidth;
     }
     
+    Square getSquareAtPosition(int x, int y){
+      int xCo = floor((x - maze.x) / squareWidth);
+      int yCo = floor((y - maze.y) / squareWidth);
+      
+      return getSquare(xCo, yCo);
+    }
+    
     
     char[][] getTextRepresentation(){
       char[][] maze = new char[1 + (getNumberOfColumns()+1)*2][1 + (getNumberOfRows()+1)*2];
@@ -296,6 +303,10 @@ class Maze {
                 maze.getPaths().addPath(new Path(square, maze.getSquare(square.getXCo() - 1, square.getYCo())), false);
             }
         }
+    }
+    
+    void removePathBetween(Square start, Square end){
+      maze.getPaths().removePath(start, end);
     }
 
     // Remove the walls from each square

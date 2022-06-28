@@ -5,11 +5,15 @@ class Path {
     Square startSquare, endSquare;
     int direction;
     float buffer;
+    
+    float cost;
 
     // Constructor
     Path(Square startSquare, Square endSquare) {
         this.startSquare = startSquare;
         this.endSquare = endSquare;
+        
+        this.cost = random(100);
     }
     
     // Getters

@@ -1,3 +1,5 @@
+import java.util.Collections;
+
 /**
  * The interface used by the maze generators.
  */
@@ -7,6 +9,670 @@ interface IGenerator {
     void initialise();
   
     void generate();
+}
+
+class Words implements IGenerator {
+  String words;
+  int textSize;
+  
+  int direction = 1;
+  
+  Prims prims;
+  
+  ArrayList<Square> modifiedSets;
+  ArrayList<Square> wordSquares;
+  
+  boolean firstVertexPicked = false;
+  boolean mst_generated = false;
+  
+  ArrayList <Node_Store> mstSets = new ArrayList();
+  
+  Words(){}
+  
+  void drawText(String words, int text_size){
+    PFont mono;
+    mono = createFont("data/font2.ttf", 128);
+    textFont(mono);
+    
+    textSize(text_size);
+    
+    fill(255);
+    
+    String[] split = words.split(" ");
+    int curr_x = 0;
+    int limit = int(maze.w-textWidth('o'));
+    int curr_y = int(maze.y + wordsHeight.getValue());
+    
+    String curr = "";
+    for (String string : split){
+      if (curr_x + textWidth(string) > limit){
+        if (textWidth(string) > limit){
+          if (curr_x != 0){
+            text(curr, maze.x + maze.w/2, curr_y);
+            
+            curr = "";
+            curr_x = 0;
+            curr_y += textAscent()*1.25;
+          }
+          
+          int i = 0;
+          while(i < string.length()){
+            while(curr_x + textWidth(string.charAt(i)) < limit){
+              curr_x+=textWidth(string.charAt(i));
+              curr+=string.charAt(i);
+              i++;
+              
+              if (i == string.length()){
+                break;
+              }
+            }
+            
+             if (i == string.length()){
+               curr+=' ';
+                break;
+              }
+            
+            text(curr, maze.x + maze.w/2, curr_y);
+            
+            curr = "";
+            curr_x = 0;
+            curr_y += textAscent()*1.25;
+          }
+          continue;
+        } else {
+          text(curr, maze.x + maze.w/2, curr_y);
+          curr = "";
+          curr_x = 0;
+          curr_y += textAscent()*1.25;
+        }
+      }
+      curr += string + " ";
+      curr_x += textWidth(string);
+    }
+    
+    if (curr.length() > 0 && curr.charAt(curr.length()-1) == ' '){
+      curr = curr.substring(0, curr.length()-1);
+    }
+    text(curr, maze.x + maze.w/2, curr_y);
+    
+    textFont(normal_font);
+  }
+  
+  void initialise(){
+    modifiedSets = new ArrayList();
+    wordSquares = new ArrayList();
+    
+    mstSets = new ArrayList();
+    
+    path = new ArrayList();
+    mstSet = new Node_Store();
+    mst = new ArrayList();
+    
+    nodes = new Node_HashMap(100000);
+    edges = new Edge_HashMap(100000);
+    
+    direction = 1;
+    
+    firstVertexPicked = false;
+    mst_generated = false;
+    
+    textSize = int(wordsFontSizeSlider.getValue());
+    words = wordEntry.getInput();
+    
+    drawText(words, textSize);
+    
+    for (Square square : maze.squares){
+      int count = 0;
+      
+      if (square.xCo <= 1 || square.yCo <= 1 || square.xCo >= maze.numOfColumns-1 || square.yCo >= maze.numOfRows-1){
+        continue;
+      }
+
+      for (int i = floor(square.x); i < square.x + square.w; i++){
+        for (int j = floor(square.y); j < square.y + square.h; j++){
+          if (get(i, j) == color(255, 255, 255)){
+            count++;
+          }
+        }
+        
+        if (count > 2 * (square.w * square.h) / 3){
+            square.in_word = true;
+            wordSquares.add(square);
+            
+            break;
+          }
+      }
+      
+    }
+    
+    maze.overwrite();
+  }
+  
+  String getName(){
+    return "13_words";
+  }
+  
+  void generate(){
+    if (generated){
+      return;
+    }
+    
+    try{
+    
+      ArrayList<Square> carvedSquares = new ArrayList();
+        
+      // Form the minimum spanning tree
+      if (wordSquares.size() > 0){
+        // Generate hamiltonian path around all of the squares
+        for (Square square : maze.getSquares()){
+          if (square.xCo%2 == 0 && square.yCo%2 == 0 && square.in_word
+            && maze.getSquareRight(square) != null && maze.getSquareBelow(square) != null
+            && maze.getSquareRight(square).in_word && maze.getSquareBelow(square).in_word){
+                Node newNode = new Node(int(square.x + maze.squareWidth), int(square.y + maze.squareWidth));
+                nodes.addNode(newNode);
+                
+                if (!maze.getSquareBelow(maze.getSquareRight(square)).in_word){
+                  maze.getSquareBelow(maze.getSquareRight(square)).in_word = true;
+                  wordSquares.add(maze.getSquareBelow(maze.getSquareRight(square)));
+                }
+          }
+        }
+        
+        for (Node node: nodes.getNodeList()) {
+            if (node.getNodeBelow() != null) {
+              Edge newEdge = new Edge(node, node.getNodeBelow());
+              edges.addEdge(newEdge);
+            }
+    
+            if (node.getNodeRight() != null) {
+              Edge newEdge = new Edge(node, node.getNodeRight());
+              edges.addEdge(newEdge);
+            }
+        }
+    
+        while (mst_generated == false) {
+            if (!firstVertexPicked) {
+                int rand = Math.round(random(0, nodes.getNodeList().size() - 1));
+    
+                Node firstVertex = nodes.getNodeList().get(rand);
+                firstVertex.primsKey = 0;
+                firstVertexPicked = true;
+            }
+  
+            if (mst.size() != nodes.getNodeList().size() - 2) {
+                Node min = getMinKey();
+                
+                if (min == null){
+                  boolean hit = false;
+                  for (Node node : nodes.getNodeList()){
+                    boolean check = false;
+                    for (Node_Store mstSetCheck : mstSets){
+                      if (mstSetCheck.getList().contains(node)){
+                        check = true;
+                        break;
+                      }
+                    }
+                    
+                    if (!mstSet.getList().contains(node) && !check){
+                      Node_Store toAdd = new Node_Store();
+                      for (Node add_node : mstSet.getList()){
+                        toAdd.add(add_node);
+                      }
+                      mstSets.add(toAdd);
+                      
+                      node.primsKey = 0;
+                      min = node;
+                      hit = true;
+                      
+                      mstSet = new Node_Store();
+                      
+                      break;
+                    }
+                  }
+                  
+                  if (hit == false){
+                    mst_generated = true;
+                    mstSets.add(mstSet);
+                    break;
+                  }
+                }
+    
+                Edge addedEdge = null;
+                for (Node vertex: mstSet.getList()) {
+                    addedEdge = getEdge(min, vertex);
+                    if (addedEdge != null) {
+                        mst.add(addedEdge);
+                        min.addEdge(addedEdge);
+                        vertex.addEdge(addedEdge);
+                        edges.removeEdge(addedEdge);
+                        break;
+                    }
+                }
+    
+                mstSet.add(min);
+    
+                ArrayList < Node > possibleVertices = getPossibleVertices(min);
+    
+                for (Node vertex: possibleVertices) {
+                    if (getEdge(min, vertex).weight < vertex.primsKey) {
+                        vertex.primsKey = (getEdge(min, vertex).weight);
+                    }
+                }
+            } else {
+              mstSets.add(mstSet);
+              mst_generated = true;
+            }
+        }
+        
+        // Bridge the MSTs
+        while(mstSets.size() > 1){
+          // Find the closest set to the first set (and get the closest nodes)
+          Node close1 = null;
+          Node close2 = null;
+          float min_dist = MAX_INT;
+          Node_Store mergedSet = null;
+          for (Node_Store mstSet : mstSets){
+            if (mstSets.get(0) != mstSet){
+              for (Node test : mstSets.get(0).getList()){
+                for (Node test2 : mstSet.getList()){
+                  if (dist(test.x, test.y, test2.x, test2.y) < min_dist){
+                    min_dist = dist(test.x, test.y, test2.x, test2.y);
+                    close1 = test;
+                    close2 = test2;
+                    mergedSet = mstSet;
+                  }
+                }
+              }
+            }
+          }
+          
+          joinNodes(close1, close2);
+          
+          for (Node node : mergedSet.getList()){
+            mstSets.get(0).add(node);
+          }
+          
+          mstSets.remove(mergedSet);
+        }
+        
+        
+        // Generate the hamiltonian path, and carve into maze
+        for (int i = 0; i < 2; i++){
+          Node firstNode = null;
+          Node prevNode = null;
+          Node currentNode = null;
+          
+          for (Node node : mstSets.get(0).getList()){
+            for (Edge edge : node.getEdges()){
+              edge.traversed = false;
+            }
+            if (node.getEdges().size() == 1){
+              firstNode = node;
+            }
+          }
+          
+          currentNode = firstNode;
+          
+          ArrayList<Node> stack = new ArrayList();
+          stack.add(firstNode);
+          
+          boolean possibleMove = false;
+          do{
+            possibleMove = false;
+            prevNode = currentNode;
+            
+            // Get next node, save so not traversed again
+            for (Edge edge : currentNode.getEdges()){
+              if (!edge.traversed){
+                if (edge.start != currentNode){
+                  currentNode = edge.start;
+                } else {
+                  currentNode = edge.end;
+                }
+                edge.traversed = true;
+                possibleMove = true;
+                stack.add(currentNode);
+                
+                if (i == 0){
+                  for (Square square : edge.carve()){
+                    carvedSquares.add(square);
+                  }
+                } else {
+                  edge.addWall();
+                }
+  
+                break;
+              }
+            }
+            
+            // If no moves, pop stack until there are possible moves
+            while (!possibleMove && stack.size() > 0){
+              currentNode = stack.remove(stack.size()-1);
+              for (Edge edge : currentNode.getEdges()){
+                if (!edge.traversed){
+                  possibleMove = true;
+                  stack.add(currentNode);
+                  break;
+                }
+              }
+            }
+            
+            if (stack.size() == 0){
+              break;
+            }
+            
+            // Carve out squares on the left and right of edge between the nodes
+          } while (currentNode != firstNode);
+        }
+      }
+      
+      // Remove the squares from word squares that have not been used for the hamiltonian cycle
+      for (Square square : carvedSquares){
+        wordSquares.remove(square);
+        square.in_word = true;
+      }
+      
+      for (Square square : wordSquares){
+        square.in_word = false;
+      }
+       
+      // Split the environment into 2 parts (to use word as bottleneck)
+      Square left = carvedSquares.get(0);
+      Square right = carvedSquares.get(0);
+      Collections.shuffle(carvedSquares);
+      
+      for (Square square : carvedSquares){
+        if (square.in_word && maze.getSquareRight(square).in_word 
+            && !maze.getSquareAbove(square).in_word 
+            && !maze.getSquareAbove(maze.getSquareRight(square)).in_word){
+          
+          Square current = square;
+          boolean check = false;
+          while(true) {
+            current = maze.getSquareAbove(current);
+            
+            if (current == null){
+              break;
+            }
+            
+            if (current.in_word || maze.getSquareRight(current).in_word){
+              check = true;
+              break;
+            }
+          }
+          
+          if (check) continue;
+         
+          if (square.yCo <= left.yCo){
+            left = square;
+            right = maze.getSquareRight(square);
+          }
+        }
+      }
+      
+      // get min and max yCo
+      int min = maze.numOfRows;
+      int max = -1;
+      for (Square square : carvedSquares){
+        min = min(min, square.yCo);
+        max = max(max, square.yCo);
+      }
+    
+      for (Square square : maze.squares){
+        if (left != null && !square.in_word && square.xCo > left.xCo){
+            square.setSet(-2);
+            modifiedSets.add(square);
+            
+            if (square.yCo < min - 2 || square.yCo > max + 2){
+              if (maze.getSquareLeft(square) != null && random(1) > 0.6){
+                Square curr = square;
+                for (int i = 0; i < random(3); i++){
+                  if (maze.getSquareLeft(maze.getSquareLeft(curr)) == null){
+                    break;
+                  }
+                  if (!maze.getSquareLeft(maze.getSquareLeft(curr)).in_word){
+                    maze.getSquareLeft(curr).setSet(-2);
+                    modifiedSets.add(maze.getSquareLeft(curr));
+                    curr = maze.getSquareLeft(curr);
+                  } else {
+                    break;
+                  }
+                }
+              } else if (maze.getSquareRight(square) != null && random(1) > 0.6){
+                Square curr = square;
+                for (int i = 0; i < random(3); i++){
+                  if (maze.getSquareRight(maze.getSquareRight(curr)) == null){
+                    break;
+                  }
+                  if (!maze.getSquareRight(maze.getSquareRight(curr)).in_word){
+                    maze.getSquareRight(curr).setSet(-1);
+                    curr = maze.getSquareRight(curr);
+                  } else {
+                    break;
+                  }
+                }
+              }
+            }
+        }
+      }
+      
+      // First half
+      prims = new Prims();
+      prims.initialise(maze.getSquareAtPosition(int(maze.x + 2*maze.squareWidth), maze.y + maze.h/2));
+      left.in_word = false;
+      while(!generated){
+        prims.generate();
+      }
+      
+      left.in_word = true;
+      right.in_word = false;
+      
+      generated = false;
+      
+      for (Square square : modifiedSets){
+        square.setSet(-1);
+      }
+      
+      // Second half
+      prims = new Prims();
+      prims.initialise(maze.getSquareAtPosition(int(maze.x + maze.w - 2*maze.squareWidth), maze.y + maze.h/2));
+      while(!generated){
+        prims.generate();
+      } 
+      
+      while(true){
+        boolean found = false;
+        for (Square square : maze.squares){
+          if (!square.in_word && square.set == -1){
+            prims = new Prims();
+            prims.initialise(square);
+            generated = false;
+            found = true;
+            break;
+          }
+        }
+        
+        if (found){
+          while(!generated){
+            prims.generate();
+          }
+        } else {
+          left.addRightWall();
+          right.addLeftWall();
+          maze.removePathBetween(left, right);
+          
+          maze.generatePaths();
+          generated = true;
+          
+          return;
+        }
+      }
+    } catch (Exception e){
+      generated = true;
+      squaresToUpdate.clear();
+      fill(255);
+      if (wordEntry.getInput().equals("")){
+        text("Generation failed: Empty input", maze.x + maze.w/2, maze.y + maze.h/2);
+      } else {
+        text("Generation failed: Increase font size or decrease square size", maze.x + maze.w/2, maze.y + maze.h/2);
+      }
+    }
+  }
+  
+  // Joins 2 nodes with other nodes (used for joining MST)
+  void joinNodes(Node node1, Node node2){
+    Node curr = node1;
+    Node last_curr = node1;
+    Node target = node2;
+    float curr_x = node1.x;
+    float curr_y = node1.y;
+    
+    if (abs(node1.x - node2.x) > abs(node1.y - node2.y)){
+      if (node1.x < node2.x){
+        curr = new Node(int(curr_x + maze.squareWidth*2), int(curr_y));
+        curr_x += maze.squareWidth*2;
+        target = new Node(int(node2.x - maze.squareWidth*2), int(node2.y));
+      } else {
+        curr = new Node(int(curr_x - maze.squareWidth*2), int(curr_y));
+        curr_x -= maze.squareWidth*2;
+        target = new Node(int(node2.x + maze.squareWidth*2), int(node2.y));
+      }
+    } else {
+      if (node1.y < node2.y){
+        curr = new Node(int(curr_x), int(curr_y + maze.squareWidth*2));
+        curr_y += maze.squareWidth*2;
+        target = new Node(int(node2.x), int(node2.y - maze.squareWidth*2));
+      } else {
+        curr = new Node(int(curr_x), int(curr_y - maze.squareWidth*2));
+        curr_y -= maze.squareWidth*2;
+        target = new Node(int(node2.x), int(node2.y + maze.squareWidth*2));
+      }
+    }
+    
+    Edge startEdge = new Edge(node1, curr);
+    Edge endEdge = new Edge(target, node2);
+    
+    node1.addEdge(startEdge);
+    curr.addEdge(startEdge);
+    
+    target.addEdge(endEdge);
+    node2.addEdge(endEdge);
+    
+    mstSets.get(0).add(target);
+    mstSets.get(0).add(curr);
+    
+    mst.add(startEdge);
+    mst.add(endEdge);
+    
+    while(abs(target.x-curr_x) > maze.squareWidth|| abs(target.y-curr_y) > maze.squareWidth){
+      if (curr.x < target.x && abs(curr.x - target.x) > maze.squareWidth){
+        last_curr = curr;
+        curr_x += 2*maze.squareWidth;
+        curr = new Node(int(curr_x), int(curr_y));
+        mstSets.get(0).add(curr);
+        
+        Edge newEdge = new Edge(last_curr, curr);
+        last_curr.addEdge(newEdge);
+        curr.addEdge(newEdge);
+        mst.add(newEdge);
+      } 
+      
+      if (curr.x > target.x && abs(curr.x - target.x) > maze.squareWidth){
+        last_curr = curr;
+        curr_x -= 2*maze.squareWidth;
+        curr = new Node(int(curr_x), int(curr_y));
+        mstSets.get(0).add(curr);
+        
+        Edge newEdge = new Edge(last_curr, curr);
+        last_curr.addEdge(newEdge);
+        curr.addEdge(newEdge);
+        mst.add(newEdge);
+      }
+      
+      if (curr.y > target.y && abs(curr.y - target.y) > maze.squareWidth){
+        last_curr = curr;
+        curr_y -= 2*maze.squareWidth;
+        curr = new Node(int(curr_x), int(curr_y));
+        mstSets.get(0).add(curr);
+        
+        Edge newEdge = new Edge(last_curr, curr);
+        last_curr.addEdge(newEdge);
+        curr.addEdge(newEdge);
+        mst.add(newEdge);
+      }
+      
+      if (curr.y < target.y && abs(curr.y - target.y) > maze.squareWidth){
+        last_curr = curr;
+        curr_y += 2*maze.squareWidth;
+        curr = new Node(int(curr_x), int(curr_y));
+        mstSets.get(0).add(curr);
+        
+        Edge newEdge = new Edge(last_curr, curr);
+        last_curr.addEdge(newEdge);
+        curr.addEdge(newEdge);
+        mst.add(newEdge);
+      }
+    }
+    
+    Edge newEdge = new Edge(last_curr, target);
+    target.addEdge(newEdge);
+    last_curr.addEdge(newEdge);
+    mst.add(newEdge);
+  }
+  
+  void drawPath() {
+      stroke(255, 0, 0);
+      strokeWeight(2);
+      for (int i = 0; i < path.size() - 1; i++) {
+          drawLineBetween(path.get(i), path.get(i + 1));
+      }
+  }
+  
+  void drawLineBetween(Square square1, Square square2) {
+      line(square1.x + maze.squareWidth / 2, square1.y + maze.squareWidth / 2, square2.x + maze.squareWidth / 2, square2.y + maze.squareWidth / 2);
+  }
+  
+  ArrayList < Node > getPossibleVertices(Node vertex) {
+    ArrayList < Node > toReturn = new ArrayList();
+    for (Edge edge: edges.getEdgeList()) {
+        if (edge.start == vertex && !toReturn.contains(edge.end)) {
+            toReturn.add(edge.end);
+        } else if (edge.end == vertex && !toReturn.contains(edge.start)) {
+            toReturn.add(edge.start);
+        }
+    }
+
+    return toReturn;
+  }
+  
+  Node getMinKey() {
+    Node toReturn = null;
+    int minKey = MAX_INT;
+
+    for (Node vertex: nodes.getNodeList()) {
+      boolean check = mstSet.getList().contains(vertex);
+      
+      for (Node_Store mstSetCheck : mstSets){
+        if (mstSetCheck.getList().contains(vertex)){
+          check = true;
+        }
+      }
+      
+      if (vertex.primsKey < minKey && !check) {
+          toReturn = vertex;
+          minKey = vertex.primsKey;
+      }
+    }
+
+    return toReturn;
+  }
+  
+  Edge getEdge(Node vert1, Node vert2) {
+    if (vert1 == null || vert2 == null){
+      return null;
+    }
+    return edges.getEdge(vert1, vert2);
+  }
 }
 
 /**
@@ -80,6 +746,8 @@ class Backtracker implements IGenerator {
     ArrayList < Square> routeStack;
     Boolean backtracking;
     
+    int search_set = -1;
+    
     Square_HashMap visitedSquares;
     Square_HashMap routeSquares;
 
@@ -101,6 +769,24 @@ class Backtracker implements IGenerator {
       squaresToUpdate.add(currentSquare);
     }
     
+    void initialise(Square square){
+      this.routeStack = new ArrayList();
+      this.backtracking = false;
+      
+      currentSquare = square;
+      routeStack.add(currentSquare);
+
+      visitedSquares = new Square_HashMap((maze.getNumberOfRows() + 1) * (maze.getNumberOfColumns() + 1));
+      routeSquares = new Square_HashMap((maze.getNumberOfRows() + 1) * (maze.getNumberOfColumns() + 1));
+
+      visitedSquares.addSquare(currentSquare);
+      routeSquares.addSquare(currentSquare);
+      
+      squaresToUpdate.add(currentSquare);
+      
+      search_set = square.getSet();
+    }
+    
     String getName(){
       return "2_backtracker";
     }
@@ -119,6 +805,7 @@ class Backtracker implements IGenerator {
         } else {
             Square oldSquare = currentSquare;
             ArrayList < Integer > directions = new ArrayList(Arrays.asList(0, 1, 2, 3));
+            int last_dir = 0;
             
             do {
                 if (currentSquare == null) {
@@ -219,6 +906,9 @@ class Backtracker implements IGenerator {
     }
 
     boolean checkStack(Square square) {
+        if (square != null){
+          return visitedSquares.containsSquare(square) || square.in_word || square.getSet() != search_set;
+        }
         return visitedSquares.containsSquare(square);
     }
 
@@ -1044,37 +1734,59 @@ class Prims implements IGenerator {
         mainSetSquares = new Square_HashMap((maze.getNumberOfRows() + 1) * (maze.getNumberOfColumns() + 1));
         getFirstSquare();
     }
+    
+    void initialise(Square first){
+      this.mainSet = new ArrayList();
+      this.possiblePaths = new ArrayList();
+        
+      mainSetSquares = new Square_HashMap((maze.getNumberOfRows() + 1) * (maze.getNumberOfColumns() + 1));
+      
+      primStartSquare = first;
+      first.setSet(1);
+      mainSet.add(first);
+      mainSetSquares.addSquare(first);
+      squaresToUpdate.add(first);
+    }
 
     void generate() {
         if (generated) {
             return;
         }
 
-        if (mainSet.size() < maze.squares.size()) {
-            getPossibleWalls();
-            pickRandomWall();
-        } else {
-            mainSet.clear();
-            generated = true;
-            maze.generationComplete();
+        getPossibleWalls();
+        
+        if (mainSet.size() == maze.getSquares().size()){
+          maze.generationComplete();
+          mainSet.clear();
+          generated = true;
+          return;
+        }
+        
+        try{
+          int randIndex = Math.round(random(0, possiblePaths.size() - 1));
+      
+          Path foundPath = possiblePaths.get(randIndex);
+          foundPath.getEndSquare().setSet(1);
+          
+          mainSet.add(foundPath.getEndSquare());
+          mainSetSquares.addSquare(foundPath.getEndSquare());
+          squaresToUpdate.add(foundPath.getEndSquare());
+          
+          maze.getPaths().addPath(foundPath, false);
+          foundPath.removeWallBetween(true);
+          possiblePaths.remove(randIndex);
+        } catch (Exception IndexOutOfBoundsException){
+          mainSet.clear();
+          generated = true;
         }
     }
 
-    void pickRandomWall() {
-        int randIndex = Math.round(random(0, possiblePaths.size() - 1));
-        
-        Path foundPath = possiblePaths.get(randIndex);
-        foundPath.getEndSquare().setSet(1);
-        mainSet.add(foundPath.getEndSquare());
-        mainSetSquares.addSquare(foundPath.getEndSquare());
-        squaresToUpdate.add(foundPath.getEndSquare());
-        maze.getPaths().addPath(foundPath, false);
-        foundPath.removeWallBetween(true);
-        possiblePaths.remove(randIndex);
-    }
-
     void getFirstSquare() {
-        Square first = maze.getRandomSquare();
+        Square first = null;
+        do {
+          first = maze.getRandomSquare();
+        } while (first.getSet() != -1);
+        
         primStartSquare = first;
         first.setSet(1);
         mainSet.add(first);
@@ -1130,7 +1842,7 @@ class Prims implements IGenerator {
 
     Path primCheckAbove(Square square) {
         Square aboveSquare = maze.getSquareAbove(square);
-        if (aboveSquare != null && aboveSquare.getSet() == -1) {
+        if (aboveSquare != null && aboveSquare.getSet() == -1 && !square.in_word && !aboveSquare.in_word) {
             return new Path(square, aboveSquare);
         }
         return null;
@@ -1138,7 +1850,7 @@ class Prims implements IGenerator {
 
     Path primCheckBelow(Square square) {
         Square belowSquare = maze.getSquareBelow(square);
-        if (belowSquare != null && belowSquare.getSet() == -1) {
+        if (belowSquare != null && belowSquare.getSet() == -1 && !square.in_word && !belowSquare.in_word) {
             return new Path(square, belowSquare);
         }
         return null;
@@ -1146,7 +1858,7 @@ class Prims implements IGenerator {
 
     Path primCheckLeft(Square square) {
         Square leftSquare = maze.getSquareLeft(square);
-        if (leftSquare != null && leftSquare.getSet() == -1) {
+        if (leftSquare != null && leftSquare.getSet() == -1 && !square.in_word && !leftSquare.in_word) {
             return new Path(square, leftSquare);
         }
         return null;
@@ -1154,7 +1866,7 @@ class Prims implements IGenerator {
 
     Path primCheckRight(Square square) {
         Square rightSquare = maze.getSquareRight(square);
-        if (rightSquare != null && rightSquare.getSet() == -1) {
+        if (rightSquare != null && rightSquare.getSet() == -1 && !square.in_word && !rightSquare.in_word) {
             return new Path(square, rightSquare);
         }
         return null;

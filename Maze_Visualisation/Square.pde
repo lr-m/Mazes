@@ -5,6 +5,10 @@ class Square {
     float x, y, w, h;
     int xCo, yCo;
     boolean upWall, leftWall, downWall, rightWall;
+    
+    boolean in_word = false;
+    
+    int index = -1;
 
     // For generators/solvers
     int set;

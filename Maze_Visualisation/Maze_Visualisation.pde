@@ -2,8 +2,11 @@ import java.util.Queue;
 import java.util.LinkedList;
 import java.util.Arrays;
 import java.lang.*;
+import java.util.PriorityQueue;
 
 PrintWriter output;
+
+Word_Entry wordEntry;
 
 ArrayList<Square> squaresToUpdate = new ArrayList();
 ArrayList<Square> solutionList = new ArrayList();
@@ -11,6 +14,15 @@ ArrayList<Square> solutionList = new ArrayList();
 Square_HashMap solution;
 
 PImage play, pause, skipToEnd, next, resetButImage;
+
+ArrayList < Square > path = new ArrayList();
+Node_Store mstSet = new Node_Store();
+ArrayList < Edge > mst = new ArrayList();
+
+Node_HashMap nodes = new Node_HashMap(100000);
+Edge_HashMap edges = new Edge_HashMap(100000);
+
+PFont normal_font;
 
 Maze maze;
 Square currentSquare;
@@ -37,6 +49,7 @@ Boolean reset = false, paused = false;
 Button resetBut, pauseBut, save, skipToEndBut, nextBut;
 
 Slider sizeSlider, speedSlider;
+Slider wordsFontSizeSlider, wordsHeight;
 
 int picMazeNumber = 0, txtMazeNumber = 0;
 
@@ -48,6 +61,9 @@ void setup() {
     frameRate(60);
     background(25);
     rectMode(CENTER);
+    
+    normal_font = createFont("data/normal.ttf", 128);
+    textFont(normal_font);
 
     tree = new Maze_Tree();
 
@@ -55,14 +71,19 @@ void setup() {
     solveMaze = new Button("Solve", 15, 350, 160, 20);
     clearSolution = new Button("Clear Solution", 15, 380, 160, 20);
     resetPoints = new Button("Reset Points", 15, 410, 160, 20);
+    
+    wordEntry = new Word_Entry(15, 480, 160, 40, "Enter words to draw...");
 
-    sizeSlider = new Slider(20, 70, 150, 16, 4, 128);
+    sizeSlider = new Slider(20, 70, 150, 16, 5, 50);
     speedSlider = new Slider(20, 125, 150, 16, 1, 500);
+    
+    wordsFontSizeSlider = new Slider(20, 555, 150, 16, 100, 400);
+    wordsHeight = new Slider(20, 605, 150, 16, 100, height);
 
     generationSelector = new DropList(15, 180, 160, 20, "Generation Method", 
         new ArrayList(Arrays.asList("Aldous-Broder", "BackTrack", "Binary Tree", 
         "Blobby Recursive", "Eller's", "Houston", "Hunt & Kill", "Kruskal's", 
-        "Prim's", "Recursive Division", "Sidewinder", "Wilson's")));
+        "Prim's", "Recursive Division", "Sidewinder", "Wilson's", "Words")));
     solveSelector = new DropList(15, 320, 160, 20, "Solver Method", 
         new ArrayList(Arrays.asList("A* (Manhattan)", "Breadth-First", "Depth-First", "Left-Wall", "Right-Wall")));
     saveSelector = new DropList(15, 270, 75, 20, "Save as", new ArrayList(Arrays.asList("Text", "Image")));
@@ -141,6 +162,16 @@ void draw() {
 }
 
 void mousePressed() {
+    if (!generatePressed && selectedGeneration == 13){
+      wordsFontSizeSlider.press();
+      wordsHeight.press();
+      if (wordEntry.mouseIsOver()){
+        wordEntry.toggleSelected();
+      } else {
+        wordEntry.selected = false;
+      }
+    }
+  
     // Update the number of rows and columns of the maze as the size slider value changes
     if (!generatePressed && !solvePressed) {
         maze.updateRowAndColCounts();
@@ -152,9 +183,14 @@ void mousePressed() {
     if (!generatePressed) {
         int genPressed = generationSelector.checkForPress();
         if (genPressed != -1){
-            print("hello");
+            maze.overwrite();
             generators = new IGenerator[] {
-                new Aldous_Broder(), new Backtracker(), new Binary_Tree(), new Blobby_Recursive(), new Ellers(), new Houston(), new Hunt_Kill(), new Kruskals(), new Prims(), new Recursive_Divide(), new Side_Winder(), new Wilsons()
+                new Aldous_Broder(), new Backtracker(), 
+                new Binary_Tree(), new Blobby_Recursive(), 
+                new Ellers(), new Houston(), new Hunt_Kill(), 
+                new Kruskals(), new Prims(), 
+                new Recursive_Divide(), new Side_Winder(), 
+                new Wilsons(), new Words()
             };
             selectedGeneration = genPressed;
         }
@@ -184,7 +220,8 @@ void mousePressed() {
         maze.clearSolution();
     }
 
-    if (generated && !startingPointSelected && !endingPointSelected && !solvePressed && save.MouseIsOver() && !saveSelector.dropped) {
+    //if (generated && !startingPointSelected && !endingPointSelected && !solvePressed && save.MouseIsOver() && !saveSelector.dropped) {
+    if (generated && !saveSelector.dropped) {
         if (selectedSave == 1) {
             downloadTextMaze();
         } else if (selectedSave == 2) {
@@ -262,20 +299,34 @@ void mouseReleased() {
     // Lock the slider values in
     sizeSlider.release();
     speedSlider.release();
+    wordsFontSizeSlider.release();
+    wordsHeight.release();
+    
+    if (!generatePressed && selectedGeneration == 13){
+      maze.overwrite();
+      Words words = (Words) generators[12];
+      words.drawText(wordEntry.getInput(), int(wordsFontSizeSlider.getValue()));
+    }
 }
 
 void keyPressed() {
-    // Extra key shortcuts
-    if (key == ' ') {
-        paused = !paused;
-    }
-
-    if (key == 'r') {
-        reset = true;
-    }
-
-    if (key == 'a') {
-        tree.build(startingPoint);
+    if (!generatePressed && selectedGeneration == 13 && wordEntry.isSelected()){
+      wordEntry.input(key);
+      
+      if (!generatePressed && selectedGeneration == 13){
+        maze.overwrite();
+        Words words = (Words) generators[12];
+        words.drawText(wordEntry.getInput(), int(wordsFontSizeSlider.getValue()));
+      }
+    } else {
+      // Extra key shortcuts
+      if (key == ' ') {
+          paused = !paused;
+      }
+  
+      if (key == 'r') {
+          reset = true;
+      }
     }
 }
 
@@ -369,6 +420,15 @@ void drawButtons() {
 
     sizeSlider.display();
     speedSlider.display();
+    
+    if (selectedGeneration == 13){
+      wordsFontSizeSlider.display();
+      wordsHeight.display();
+      wordEntry.Draw();
+      fill(255);
+      text("Font Size: " + wordsFontSizeSlider.getValue(), 95, 540);
+      text("Starting Height: " + wordsHeight.getValue(), 95, 590);
+    }
 
     if (paused) {
         pauseBut.Draw(play);

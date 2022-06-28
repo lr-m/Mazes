@@ -1,4 +1,96 @@
 /**
+ * Allows user to input words.
+ */
+class Word_Entry{
+  boolean selected = false;
+  String entered = "";
+  
+  int x, y, w, h;
+  
+  String default_text;
+  
+  Word_Entry(int x, int y, int w, int h, String default_text){
+    this.x = x;
+    this.y = y;
+    this.w = w;
+    this.h = h;
+    
+    this.default_text = default_text;
+  }
+  
+  void Draw(){
+    noStroke();
+    
+    if (!selected){
+      fill(200);
+    } else {
+      fill(150);
+    }
+    rect(this.x, this.y, this.w, this.h, 10);
+    fill(225);
+    rect(this.x + 7.5, this.y + 7.5, this.w - 15, this.h-15, 5);
+    
+    textAlign(LEFT, CENTER);
+    if (entered.equals("")){
+      fill(125);
+      text(default_text, this.x + 20, this.y + this.h/2);
+    } else {
+      fill(10);
+      text(entered, this.x + 20, this.y + this.h/2);
+    }
+    textAlign(CENTER, CENTER);
+  }
+  
+  boolean mouseIsOver(){
+    if (mouseX < this.x + this.w && mouseX > this.x && mouseY < this.y + this.h && mouseY > this.y){
+      return true;
+    }
+    
+    return false;
+  }
+  
+  void input(char key){
+    if (int(key) == 65535){
+      return;
+    }
+    
+    if (int(key) == 8){
+      if (entered.length() > 0){
+        entered = entered.substring(0, entered.length() -1);
+      }
+      return;
+    }
+    
+    if (int(key) == 10){
+      toggleSelected();
+      return;
+    }
+    
+    if (textWidth(entered + key) > this.w - 40){
+      return;
+    }
+    
+    entered+=key;
+  }
+  
+  void clear(){
+    entered = "";
+  }
+  
+  String getInput(){
+    return entered;
+  }
+  
+  void toggleSelected(){
+    selected = !selected;
+  }
+  
+  boolean isSelected(){
+    return selected;
+  }
+}
+
+/**
  * This class implements a drop list that allows the user to select a value from a list.
  */
 class DropList {
