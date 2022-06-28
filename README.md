@@ -1,4 +1,5 @@
-# Maze_Generation
+![maze1 (1)](https://user-images.githubusercontent.com/47477832/176163682-d0bdbbf1-806c-4bbb-be7c-5b4f63a04d6a.png)
+
 Visualisation of various maze generation algorithms, as well as solvers. Plus a maze benchmarker.
 
 ### Maze_Visualisation:
