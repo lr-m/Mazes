@@ -1,44 +1,93 @@
-![maze1 (1)](https://user-images.githubusercontent.com/47477832/176163682-d0bdbbf1-806c-4bbb-be7c-5b4f63a04d6a.png)
+![header.gif](/images/header.gif)
 
-Visualisation of various maze generation algorithms, as well as solvers. Plus a maze benchmarker.
+Visualisation of various maze generation algorithms, as well as solvers. Plus a maze benchmarker. Inspired by [this series of blogs](https://weblog.jamisbuck.org/2011/2/7/maze-generation-algorithm-recap.html).
 
-### Maze_Visualisation:
-- Contains the source code for the application, written in Java/Processing.
-- NOTE: Blobby recursive lags on high speeds with low square size
+## Maze_Visualisation
 
-Screenshots:
+- Contains the source code for the application, written in Java/Processing
+- *NOTE*: Blobby recursive lags on high speeds with low square size
 
-<img src="https://user-images.githubusercontent.com/47477832/156892125-d57dff65-688d-475c-bf2c-69c9432856af.PNG" width="700">
+## Generators
 
-<img src="https://user-images.githubusercontent.com/47477832/156892108-cf032090-7ba3-44e1-80d3-79f4f40193d4.PNG" width="700">
+### Aldous-Broder
 
-<img src="https://user-images.githubusercontent.com/47477832/156892029-f8023e79-c3f5-4595-a117-2da54e977e9f.PNG" width="700">
+![aldous.gif](/images/aldous.gif)
 
-- Generators:
-  - Aldous-Broder
-  - Backtracker
-  - Binary Tree
-  - Blobby Recursive
-  - Ellers
-  - Houston
-  - Hunt & Kill
-  - Kruskals
-  - Prims
-  - Recursive Division
-  - Sidewinder
-  - Wilson's
-- Solvers:
-  - A* (Manhattan heuristic)
-  - Breadth-First Search
-  - Depth-First Search (Random)
-  - Left-First Depth-First Search
-  - Right-First Depth-First Search
+### Backtracker
 
-### Maze_Tester
+![backtrack.gif](/images/backtrack.gif)
+
+### Binary Tree
+
+![binary_tree.gif](/images/binary_tree.gif)
+
+### Blobby Recursive
+
+![blobby.gif](/images/blobby.gif)
+
+### Ellers
+
+![ellers.gif](/images/ellers.gif)
+
+### Houston
+
+![houstons.gif](/images/houstons.gif)
+
+### Hunt & Kill
+
+![hunt_kill.gif](/images/hunt_kill.gif)
+
+### Kruskals
+
+![kruskals.gif](/images/kruskals.gif)
+
+### Prims
+
+![prims.gif](/images/prims.gif)
+
+### Recursive Division
+
+![division.gif](/images/division.gif)
+
+### Sidewinder
+
+![sidewinder.gif](/images/sidewinder.gif)
+
+### Wilson's
+
+![wilsons.gif](/images/wilsons.gif)
+
+### Words
+
+![words.gif](/images/words.gif)
+
+## Solvers
+
+### A* (Manhattan heuristic)
+
+![a_star.gif](/images/a_star.gif)
+
+### Breadth-First Search
+
+![breadth.gif](/images/breadth.gif)
+
+### Depth-First Search (Random)
+
+![depth.gif](/images/depth.gif)
+
+### Left-First Depth-First Search
+
+![left.gif](/images/left.gif)
+
+### Right-First Depth-First Search
+
+![right.gif](/images/right.gif)
+
+## Maze_Tester
 - C program that solves a passed maze, mazes are passed as text files where '#' represents a wall and '-' represents an empty square.
 
-```gcc main.c agent.c hash.c stack.c -o solve_maze```
-```.\solve_maze.exe "maze.txt" 37 23 1 1 35 21 v```
+`gcc main.c agent.c hash.c stack.c -o solve_maze`
+`.\solve_maze.exe "maze.txt" 37 23 1 1 35 21 v`
 
 - This use case would provide the following output:
 
